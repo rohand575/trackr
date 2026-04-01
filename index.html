@@ -4,8 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SubTrackr</title>
+    <title>Trackr</title>
     <meta name="description" content="Modern subscription management across countries" />
+    <script>
+      // Restore path encoded by 404.html SPA redirect
+      (function () {
+        var p = new URLSearchParams(window.location.search).get('p');
+        if (p) window.history.replaceState(null, '', p);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

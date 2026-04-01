@@ -122,13 +122,15 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit }) => {
                   <span className="text-[10px] text-gray-400">{DAY_LABELS[dayOfWeek]}</span>
                   <div
                     className={`w-full aspect-square rounded-lg transition-all ${
-                      done
-                        ? 'opacity-100'
+                      done && isToday
+                        ? 'ring-2 ring-offset-1'
+                        : done
+                        ? ''
                         : isToday
                         ? 'bg-gray-100 border-2 border-dashed border-gray-200'
                         : 'bg-gray-50'
-                    } ${isToday ? 'ring-1 ring-offset-1 ring-gray-200' : ''}`}
-                    style={done ? { backgroundColor: habit.color } : {}}
+                    }`}
+                    style={done ? { backgroundColor: habit.color, ...(isToday ? { outlineColor: habit.color } : {}) } : {}}
                   />
                 </div>
               );
