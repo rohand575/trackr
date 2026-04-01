@@ -48,7 +48,7 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* Desktop navigation */}
-          <nav className="hidden sm:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1">
             {NAV_LINKS.map((link) => (
               <NavLink
                 key={link.to}
@@ -68,12 +68,12 @@ export const Navbar: React.FC = () => {
           </nav>
 
           {/* Desktop user menu */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-100">
-              <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center">
+              <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center shrink-0">
                 <span className="text-xs font-semibold text-white">{emailInitial}</span>
               </div>
-              <span className="text-sm text-gray-600 max-w-[180px] truncate">{user?.email}</span>
+              <span className="hidden lg:block text-sm text-gray-600 max-w-[180px] truncate">{user?.email}</span>
             </div>
             <button
               onClick={handleLogout}
@@ -88,7 +88,7 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="sm:hidden">
+          <div className="md:hidden">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
@@ -106,7 +106,7 @@ export const Navbar: React.FC = () => {
 
         {/* Mobile dropdown */}
         {menuOpen && (
-          <div className="sm:hidden border-t border-gray-100 py-3 animate-slide-up">
+          <div className="md:hidden border-t border-gray-100 py-3 animate-slide-up">
             <nav className="flex flex-col gap-1 mb-3">
               {NAV_LINKS.map((link) => (
                 <NavLink
