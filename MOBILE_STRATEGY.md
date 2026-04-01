@@ -1,8 +1,8 @@
-# SubTrackr Mobile Strategy
+# Trackr Mobile Strategy
 
 ## Overview
 
-SubTrackr will be extended to Android and iOS using **Capacitor** — the same existing React/Tailwind/Firebase codebase runs inside a native app shell. No rewrites. No new framework to learn.
+Trackr will be extended to Android and iOS using **Capacitor** — the same existing React/Tailwind/Firebase codebase runs inside a native app shell. No rewrites. No new framework to learn.
 
 **The update workflow will be:**
 ```
@@ -53,19 +53,19 @@ npm install vite-plugin-pwa --save-dev
 Package the web app as a native Android APK.
 
 ### What to do
-- [ ] Install Capacitor core packages
-- [ ] Initialize Capacitor with app ID and name
-- [ ] Add the Android platform
-- [ ] Build web app and sync to native
+- [x] Install Capacitor core packages
+- [x] Initialize Capacitor with app ID and name
+- [x] Add the Android platform
+- [x] Build web app and sync to native
 - [ ] Test on Android emulator (Android Studio required)
-- [ ] Test on a physical Android device
+- [x] Test on a physical Android device
 
 ### Commands
 ```bash
 npm install @capacitor/core @capacitor/cli
 npm install @capacitor/android @capacitor/ios
 
-npx cap init "SubTrackr" "com.yourname.subtrackr" --web-dir dist
+npx cap init "Trackr" "com.trackr.app" --web-dir dist
 
 npm run build
 npx cap add android
@@ -75,13 +75,27 @@ npx cap sync
 npx cap open android
 ```
 
+### Convenience scripts (added to package.json)
+```bash
+npm run cap:sync          # build + sync in one step
+npm run cap:open:android  # open in Android Studio
+npm run cap:run:android   # build & run on connected device/emulator
+```
+
 ### After every web change
 ```bash
-npm run build && npx cap sync
+npm run cap:sync
 ```
 
 ### Deliverable
 - Working Android APK installable on any Android device
+
+### Notes
+- **App ID:** `com.trackr.app` — set in `capacitor.config.ts`. Change this before publishing if you want a different package name.
+- **`--legacy-peer-deps` required:** `vite-plugin-pwa@1.2.0` doesn't declare support for Vite 8 in its peer deps. All `npm install` commands need `--legacy-peer-deps` until the plugin updates. This doesn't cause runtime issues.
+- **Android Studio required** to run the emulator or build a signed APK. Install it from https://developer.android.com/studio.
+- **`android/` folder** is generated and should be committed to git — it contains native project config that may be manually edited (splash screens, permissions, etc.).
+- **`server.androidScheme: 'https'`** is set in `capacitor.config.ts` so that cookies, service workers, and other web APIs that require a secure context work correctly inside the Android WebView.
 
 ---
 
@@ -110,8 +124,8 @@ npx cap open ios   # Opens Xcode
 ```
 
 ### Deliverable
-- SubTrackr live on Google Play Store
-- SubTrackr live on Apple App Store
+- Trackr live on Google Play Store
+- Trackr live on Apple App Store
 
 ---
 
@@ -140,7 +154,7 @@ npm install @capacitor/haptics
 - Tactile confirmation on subscription add/delete
 
 ### Deep Linking
-- Open the app from email links (e.g. `subtrackr://dashboard`)
+- Open the app from email links (e.g. `trackr://dashboard`)
 
 ---
 

@@ -11,9 +11,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon-180x180.png', 'pwa-192x192.png', 'pwa-512x512.png', 'maskable-icon-512x512.png'],
       manifest: {
-        name: 'SubTrackr',
-        short_name: 'SubTrackr',
-        description: 'Track and manage your subscriptions',
+        name: 'Trackr',
+        short_name: 'Trackr',
+        description: 'Track and manage your subscriptions, goals, habits & documents',
         theme_color: '#6366f1',
         background_color: '#0f0f1a',
         display: 'standalone',

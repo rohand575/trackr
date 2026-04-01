@@ -1,4 +1,4 @@
-# SubTrackr — Setup Guide
+# Trackr — Setup Guide
 
 ## 1. Firebase Project Setup
 
