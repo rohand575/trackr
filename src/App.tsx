@@ -4,6 +4,7 @@ import { App as CapApp } from '@capacitor/app';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
+import { OverviewDashboard } from './pages/OverviewDashboard';
 import { GoalsHabits } from './pages/GoalsHabits';
 import { DocumentVault } from './pages/DocumentVault';
 import { Bills } from './pages/Bills';
@@ -137,6 +138,14 @@ const App: React.FC = () => {
         />
         <Route
           path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <OverviewDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscriptions"
           element={
             <ProtectedRoute>
               <Dashboard />
