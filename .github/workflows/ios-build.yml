@@ -1,0 +1,81 @@
+name: Build iOS IPA
+
+# Trigger manually from GitHub Actions tab, or automatically on push to main
+# when iOS-related files change. Manual trigger is preferred — macOS runners
+# consume free-tier minutes faster than Linux runners.
+on:
+  workflow_dispatch:   # ← main way to trigger: Actions tab → "Run workflow"
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'ios/**'
+      - 'assets/**'
+      - 'capacitor.config.ts'
+
+jobs:
+  build-ios:
+    runs-on: macos-latest   # macOS runner required for Xcode
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      # Build the React app and sync the output into ios/
+      - name: Build web app and sync to iOS
+        run: npm run cap:sync
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+
+      # Build the .app binary without code signing.
+      # AltStore will re-sign the IPA with your personal Apple ID when you sideload it.
+      - name: Build iOS app (unsigned, for AltStore sideloading)
+        run: |
+          cd ios/App
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath ../../build/DerivedData \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            build
+
+      # Package the built .app into an .ipa file
+      - name: Package .app into .ipa
+        run: |
+          APP_PATH=$(find build/DerivedData -name "*.app" -path "*/Release-iphoneos/*" | head -1)
+          echo "Found app at: $APP_PATH"
+          mkdir -p build/Payload
+          cp -r "$APP_PATH" build/Payload/
+          cd build && zip -r Trackr.ipa Payload/
+          echo "IPA created at build/Trackr.ipa"
+          ls -lh Trackr.ipa
+
+      # Upload the IPA as a downloadable artifact.
+      # After the workflow run completes, go to:
+      #   GitHub → your repo → Actions → this run → scroll to Artifacts → download "Trackr-iOS"
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Trackr-iOS
+          path: build/Trackr.ipa
+          retention-days: 30   # artifact available for 30 days before auto-deletion

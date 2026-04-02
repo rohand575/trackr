@@ -198,19 +198,30 @@ Use this if you don't have access to a Mac. It involves building the IPA in CI a
    - On iPhone: **Settings → General → VPN & Device Management → Trust** your Apple ID
 
 3. **Build the IPA via GitHub Actions:**
-   - Push the `ios/` folder to GitHub (it's already set up to be committed)
-   - Create a GitHub Actions workflow (`.github/workflows/ios-build.yml`) that:
-     - Runs on macOS runner
-     - Runs `npm run build && npx cap sync`
-     - Uses `xcodebuild` with a development certificate to produce an IPA
-   - Download the IPA artifact from the Actions run
+   - The workflow is already created at `.github/workflows/ios-build.yml`
+   - It builds an **unsigned IPA** on a macOS runner — AltStore re-signs it with your Apple ID on install
+   - **Trigger the build:**
+     - Go to your repo on GitHub → **Actions** tab
+     - Click **"Build iOS IPA"** in the left sidebar
+     - Click **"Run workflow"** → **"Run workflow"** (green button)
+     - Wait ~10–15 minutes for the macOS build to complete
 
-4. **Sideload the IPA:**
-   - Open AltStore on iPhone → My Apps → **+** → select the downloaded IPA
+4. **Download the IPA:**
+   - After the workflow run turns green (✅), click into that run
+   - Scroll to the bottom of the run page → **Artifacts** section
+   - Click **"Trackr-iOS"** — downloads a zip file
+   - Unzip it → you'll find `Trackr.ipa` inside
+   - Artifacts are kept for **30 days** before auto-deletion
+
+5. **Sideload the IPA:**
+   - Open AltStore on iPhone → **My Apps** tab → **+** button (top left)
+   - Select the `Trackr.ipa` file
    - AltStore re-signs it with your Apple ID and installs it
+   - Takes ~30 seconds
 
-5. **Auto-refresh:**
+6. **Auto-refresh:**
    - AltStore refreshes installed apps every 7 days when AltServer is running and iPhone is on the same Wi-Fi
+   - Or open AltStore → My Apps → long-press Trackr → Refresh
 
 > **Recommendation:** Use Method 1 (Xcode) if you have any access to a Mac — even borrowing one for 10 minutes is enough to do the initial install. Method 2 is the Windows fallback.
 
