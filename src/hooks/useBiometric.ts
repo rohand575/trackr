@@ -28,7 +28,7 @@ export const useBiometric = (): BiometricState => {
   useEffect(() => {
     const init = async () => {
       try {
-        const result = await NativeBiometric.isAvailable();
+        const result = await NativeBiometric.isAvailable({ useFallback: true });
         setIsAvailable(result.isAvailable);
         if (result.isAvailable) {
           const stored = localStorage.getItem(PREF_KEY);
@@ -52,6 +52,7 @@ export const useBiometric = (): BiometricState => {
         title: 'Trackr',
         subtitle: 'Use your biometric to continue',
         negativeButtonText: 'Cancel',
+        useFallback: true,
       });
       setIsLocked(false);
     } catch {
@@ -69,6 +70,7 @@ export const useBiometric = (): BiometricState => {
           reason: 'Confirm to disable biometric lock',
           title: 'Disable Biometric Lock',
           negativeButtonText: 'Cancel',
+          useFallback: true,
         });
         localStorage.setItem(PREF_KEY, 'false');
         setIsEnabled(false);
@@ -83,6 +85,7 @@ export const useBiometric = (): BiometricState => {
           reason: 'Set up biometric lock for Trackr',
           title: 'Enable Biometric Lock',
           negativeButtonText: 'Cancel',
+          useFallback: true,
         });
         localStorage.setItem(PREF_KEY, 'true');
         setIsEnabled(true);
