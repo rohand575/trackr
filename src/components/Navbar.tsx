@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { to: '/dashboard', label: 'Subscriptions', icon: '💳' },
   { to: '/bills', label: 'Bills', icon: '🧾' },
   { to: '/goals-habits', label: 'Goals & Habits', icon: '🎯' },
+  { to: '/ideas', label: 'Ideas', icon: '💡' },
   { to: '/documents', label: 'Documents', icon: '🗂️' },
 ];
 

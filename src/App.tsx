@@ -7,9 +7,11 @@ import { Dashboard } from './pages/Dashboard';
 import { GoalsHabits } from './pages/GoalsHabits';
 import { DocumentVault } from './pages/DocumentVault';
 import { Bills } from './pages/Bills';
+import { Ideas } from './pages/Ideas';
 import { Settings } from './pages/Settings';
 import { Toast } from './components/Toast';
 import { BiometricLock } from './components/BiometricLock';
+import { QuickCapture } from './components/QuickCapture';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { useAuth } from './hooks/useAuth';
 import { useBiometric } from './hooks/useBiometric';
@@ -112,6 +114,7 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Toast />
+      <QuickCapture />
       <DeepLinkHandler />
       <NotificationManager />
       <Routes>
@@ -145,6 +148,14 @@ const App: React.FC = () => {
           element={
             <ProtectedRoute>
               <GoalsHabits />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ideas"
+          element={
+            <ProtectedRoute>
+              <Ideas />
             </ProtectedRoute>
           }
         />

@@ -10,9 +10,9 @@ interface HabitCardProps {
   onEdit: (habit: Habit) => void;
 }
 
-const getLast7Days = (): string[] => {
+const getLast28Days = (): string[] => {
   const days: string[] = [];
-  for (let i = 6; i >= 0; i--) {
+  for (let i = 27; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
     days.push(d.toISOString().split('T')[0]);
@@ -21,6 +21,20 @@ const getLast7Days = (): string[] => {
 };
 
 const DAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
+const getBestStreak = (completions: string[]): number => {
+  if (!completions.length) return 0;
+  const sorted = [...completions].sort();
+  let best = 1, current = 1;
+  for (let i = 1; i < sorted.length; i++) {
+    const diff = Math.round(
+      (new Date(sorted[i]).getTime() - new Date(sorted[i - 1]).getTime()) / (1000 * 60 * 60 * 24)
+    );
+    if (diff === 1) { current++; if (current > best) best = current; }
+    else { current = 1; }
+  }
+  return best;
+};
 
 const getStreak = (completions: string[]): number => {
   const sorted = [...completions].sort().reverse();
@@ -47,12 +61,17 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit }) => {
   const [deleting, setDeleting] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
-  const last7 = getLast7Days();
+  const last28 = getLast28Days();
   const streak = getStreak(habit.completions);
+  const bestStreak = getBestStreak(habit.completions);
   const isCompletedToday = habit.completions.includes(today);
 
+  const last7 = last28.slice(-7);
   const weekCompletions = last7.filter((d) => habit.completions.includes(d)).length;
   const weekRate = Math.round((weekCompletions / 7) * 100);
+
+  // Split 28 days into 4 weeks of 7
+  const weeks = [last28.slice(0, 7), last28.slice(7, 14), last28.slice(14, 21), last28.slice(21, 28)];
 
   const handleToggleToday = async () => {
     if (!user) return;
@@ -111,49 +130,62 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit }) => {
             </div>
           </div>
 
-          {/* 7-day tracker */}
-          <div className="flex gap-1.5 mb-4">
-            {last7.map((date) => {
-              const done = habit.completions.includes(date);
-              const isToday = date === today;
-              const dayOfWeek = new Date(date + 'T00:00:00').getDay();
-              return (
-                <div key={date} className="flex-1 flex flex-col items-center gap-1">
-                  <span className="text-[10px] text-gray-400">{DAY_LABELS[dayOfWeek]}</span>
-                  <div
-                    className={`w-full aspect-square rounded-lg transition-all ${
-                      done && isToday
-                        ? 'ring-2 ring-offset-1'
-                        : done
-                        ? ''
-                        : isToday
-                        ? 'bg-gray-100 border-2 border-dashed border-gray-200'
-                        : 'bg-gray-50'
-                    }`}
-                    style={done ? { backgroundColor: habit.color, ...(isToday ? { outlineColor: habit.color } : {}) } : {}}
-                  />
+          {/* 28-day heatmap */}
+          <div className="mb-4">
+            {/* Day-of-week labels (aligned to first week's days) */}
+            <div className="flex gap-1 mb-1">
+              {weeks[0].map((date) => {
+                const dow = new Date(date + 'T00:00:00').getDay();
+                return (
+                  <div key={date} className="flex-1 text-center">
+                    <span className="text-[9px] text-gray-400">{DAY_LABELS[dow]}</span>
+                  </div>
+                );
+              })}
+            </div>
+            {/* 4 weeks of cells */}
+            <div className="flex flex-col gap-1">
+              {weeks.map((week, wi) => (
+                <div key={wi} className="flex gap-1">
+                  {week.map((date) => {
+                    const done = habit.completions.includes(date);
+                    const isToday = date === today;
+                    return (
+                      <div
+                        key={date}
+                        className={`flex-1 aspect-square rounded-md transition-all ${
+                          done ? '' : isToday ? 'bg-gray-100 border border-dashed border-gray-300' : 'bg-gray-50'
+                        } ${done && isToday ? 'ring-2 ring-offset-1' : ''}`}
+                        style={done ? { backgroundColor: habit.color + (isToday ? '' : 'cc'), ...(done && isToday ? { ringColor: habit.color } : {}) } : {}}
+                        title={date}
+                      />
+                    );
+                  })}
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
 
           {/* Stats row */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="text-center">
-                <p className="text-lg font-bold text-gray-900">{streak}</p>
-                <p className="text-[10px] text-gray-400 uppercase tracking-wide">Streak</p>
-              </div>
-              <div className="w-px h-8 bg-gray-100" />
-              <div className="text-center">
-                <p className="text-lg font-bold text-gray-900">{weekRate}%</p>
-                <p className="text-[10px] text-gray-400 uppercase tracking-wide">This week</p>
-              </div>
-              <div className="w-px h-8 bg-gray-100" />
-              <div className="text-center">
-                <p className="text-lg font-bold text-gray-900">{habit.completions.length}</p>
-                <p className="text-[10px] text-gray-400 uppercase tracking-wide">Total</p>
-              </div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="text-center">
+              <p className="text-base font-bold text-gray-900">{streak}</p>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide">Streak</p>
+            </div>
+            <div className="w-px h-7 bg-gray-100" />
+            <div className="text-center">
+              <p className="text-base font-bold text-gray-900">{bestStreak}</p>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide">Best</p>
+            </div>
+            <div className="w-px h-7 bg-gray-100" />
+            <div className="text-center">
+              <p className="text-base font-bold text-gray-900">{weekRate}%</p>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide">This week</p>
+            </div>
+            <div className="w-px h-7 bg-gray-100" />
+            <div className="text-center">
+              <p className="text-base font-bold text-gray-900">{habit.completions.length}</p>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide">Total</p>
             </div>
           </div>
 

@@ -111,13 +111,38 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
             </div>
           </div>
 
-          {/* Progress bar */}
+          {/* Progress */}
           <div className="mb-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs text-gray-500">Progress</span>
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              {/* Circular ring */}
+              <div className="relative w-14 h-14 shrink-0">
+                <svg className="w-14 h-14 -rotate-90" viewBox="0 0 48 48">
+                  <circle cx="24" cy="24" r="19" fill="none" stroke="#f3f4f6" strokeWidth="4.5" />
+                  <circle
+                    cx="24" cy="24" r="19" fill="none"
+                    stroke={progress >= 100 ? '#10b981' : progress >= 60 ? '#6366f1' : '#818cf8'}
+                    strokeWidth="4.5"
+                    strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 19}`}
+                    strokeDashoffset={`${2 * Math.PI * 19 * (1 - Math.min(progress, 100) / 100)}`}
+                    className="transition-all duration-500"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-[11px] font-bold text-gray-700">{Math.round(progress)}%</span>
+                </div>
+              </div>
+
+              {/* Details */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-gray-500">Progress</span>
+                  <span className={`text-xs font-medium ${daysLeft < 0 ? 'text-red-500' : daysLeft <= 14 ? 'text-amber-600' : 'text-gray-400'}`}>
+                    {daysLeft < 0 ? `${Math.abs(daysLeft)}d overdue` : daysLeft === 0 ? 'Due today' : `${daysLeft}d left`}
+                  </span>
+                </div>
                 {editingProgress ? (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 mb-1.5">
                     <input
                       type="number" value={progressInput} onChange={(e) => setProgressInput(e.target.value)}
                       placeholder={String(goal.currentValue)}
@@ -128,25 +153,22 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
                     <button onClick={() => setEditingProgress(false)} className="text-xs text-gray-400 hover:text-gray-600">✕</button>
                   </div>
                 ) : (
-                  <button onClick={() => { setEditingProgress(true); setProgressInput(String(goal.currentValue)); }} className="text-xs font-semibold text-gray-700 hover:text-indigo-600 transition-colors">
+                  <button
+                    onClick={() => { setEditingProgress(true); setProgressInput(String(goal.currentValue)); }}
+                    className="text-xs font-semibold text-gray-700 hover:text-indigo-600 transition-colors mb-1.5 block"
+                  >
                     {goal.currentValue} / {goal.targetValue} {goal.unit}
                   </button>
                 )}
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      progress >= 100 ? 'bg-emerald-500' : progress >= 60 ? 'bg-indigo-500' : 'bg-indigo-400'
+                    }`}
+                    style={{ width: `${Math.min(progress, 100)}%` }}
+                  />
+                </div>
               </div>
-            </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ${
-                  progress >= 100 ? 'bg-emerald-500' : progress >= 60 ? 'bg-indigo-500' : 'bg-indigo-400'
-                }`}
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <div className="flex justify-between mt-1">
-              <span className="text-xs text-gray-400">{progress.toFixed(0)}% complete</span>
-              <span className={`text-xs font-medium ${daysLeft < 0 ? 'text-red-500' : daysLeft <= 14 ? 'text-amber-600' : 'text-gray-400'}`}>
-                {daysLeft < 0 ? `${Math.abs(daysLeft)}d overdue` : daysLeft === 0 ? 'Due today' : `${daysLeft}d left`}
-              </span>
             </div>
           </div>
 
