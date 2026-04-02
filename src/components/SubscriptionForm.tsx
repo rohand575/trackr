@@ -16,7 +16,7 @@ const schema = z.object({
   currency: z.enum(['EUR', 'INR', 'USD', 'GBP']),
   billingCycle: z.enum(['Monthly', 'Yearly', 'Quarterly', 'Weekly']),
   nextPaymentDate: z.string().min(1, 'Payment date is required'),
-  paymentMethod: z.enum(['Bank Transfer', 'Direct Debit', 'Credit Card', 'UPI', 'Cash', 'Other']),
+  paymentMethod: z.enum(['Bank Transfer', 'Direct Debit', 'Credit Card', 'UPI', 'Google Pay', 'PhonePe', 'Auto Debit', 'Cash', 'Other']),
   accountUsed: z.string().min(1, 'Account is required').max(100),
   status: z.enum(['Active', 'Paused', 'Cancelled']),
   notes: z.string().max(500),
@@ -264,6 +264,9 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
                   <option value="Direct Debit">Direct Debit</option>
                   <option value="Credit Card">Credit Card</option>
                   <option value="UPI">UPI</option>
+                  <option value="Google Pay">Google Pay</option>
+                  <option value="PhonePe">PhonePe</option>
+                  <option value="Auto Debit">Auto Debit</option>
                   <option value="Cash">Cash</option>
                   <option value="Other">Other</option>
                 </select>

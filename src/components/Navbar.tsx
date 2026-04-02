@@ -6,6 +6,7 @@ import { useToastStore } from '../store/useToastStore';
 
 const NAV_LINKS = [
   { to: '/dashboard', label: 'Subscriptions', icon: '💳' },
+  { to: '/bills', label: 'Bills', icon: '🧾' },
   { to: '/goals-habits', label: 'Goals & Habits', icon: '🎯' },
   { to: '/documents', label: 'Documents', icon: '🗂️' },
 ];

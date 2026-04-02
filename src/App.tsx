@@ -5,6 +5,7 @@ import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { GoalsHabits } from './pages/GoalsHabits';
 import { DocumentVault } from './pages/DocumentVault';
+import { Bills } from './pages/Bills';
 import { Toast } from './components/Toast';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { useAuth } from './hooks/useAuth';
@@ -66,6 +67,14 @@ const App: React.FC = () => {
           element={
             <ProtectedRoute>
               <DocumentVault />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/bills"
+          element={
+            <ProtectedRoute>
+              <Bills />
             </ProtectedRoute>
           }
         />

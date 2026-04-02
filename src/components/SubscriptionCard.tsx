@@ -92,7 +92,7 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ subscription
             <div className="flex items-center gap-1 shrink-0">
               <button
                 onClick={() => onEdit(subscription)}
-                className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors opacity-60 hover:opacity-100"
                 title="Edit"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -101,7 +101,7 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ subscription
               </button>
               <button
                 onClick={() => setShowConfirm(true)}
-                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-60 hover:opacity-100"
                 title="Delete"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

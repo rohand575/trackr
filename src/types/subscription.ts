@@ -1,7 +1,7 @@
 export type Country = 'Germany' | 'India';
 export type Currency = 'EUR' | 'INR' | 'USD' | 'GBP';
 export type BillingCycle = 'Monthly' | 'Yearly' | 'Quarterly' | 'Weekly';
-export type PaymentMethod = 'Bank Transfer' | 'Direct Debit' | 'Credit Card' | 'UPI' | 'Cash' | 'Other';
+export type PaymentMethod = 'Bank Transfer' | 'Direct Debit' | 'Credit Card' | 'UPI' | 'Google Pay' | 'PhonePe' | 'Auto Debit' | 'Cash' | 'Other';
 export type SubscriptionStatus = 'Active' | 'Paused' | 'Cancelled';
 
 export type Category =
