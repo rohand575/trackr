@@ -3,11 +3,10 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-route
 import { App as CapApp } from '@capacitor/app';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
-import { Dashboard } from './pages/Dashboard';
+import { Payments } from './pages/Payments';
 import { OverviewDashboard } from './pages/OverviewDashboard';
 import { GoalsHabits } from './pages/GoalsHabits';
 import { DocumentVault } from './pages/DocumentVault';
-import { Bills } from './pages/Bills';
 import { Ideas } from './pages/Ideas';
 import { Settings } from './pages/Settings';
 import { Toast } from './components/Toast';
@@ -145,13 +144,14 @@ const App: React.FC = () => {
           }
         />
         <Route
-          path="/subscriptions"
+          path="/payments"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <Payments />
             </ProtectedRoute>
           }
         />
+        <Route path="/subscriptions" element={<Navigate to="/payments" replace />} />
         <Route
           path="/goals-habits"
           element={
@@ -176,14 +176,7 @@ const App: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/bills"
-          element={
-            <ProtectedRoute>
-              <Bills />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/bills" element={<Navigate to="/payments" replace />} />
         <Route
           path="/settings"
           element={
