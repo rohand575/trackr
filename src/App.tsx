@@ -7,6 +7,7 @@ import { Dashboard } from './pages/Dashboard';
 import { GoalsHabits } from './pages/GoalsHabits';
 import { DocumentVault } from './pages/DocumentVault';
 import { Bills } from './pages/Bills';
+import { Settings } from './pages/Settings';
 import { Toast } from './components/Toast';
 import { BiometricLock } from './components/BiometricLock';
 import { LoadingSpinner } from './components/LoadingSpinner';
@@ -160,6 +161,14 @@ const App: React.FC = () => {
           element={
             <ProtectedRoute>
               <Bills />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings biometric={biometric} />
             </ProtectedRoute>
           }
         />
