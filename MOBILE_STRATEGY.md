@@ -256,27 +256,85 @@ Use this if you don't have access to a Mac. It involves building the IPA in CI a
 
 Optional native features that go beyond what the web can do.
 
-### Push Notifications
+### Haptic Feedback ✅ Done
 ```bash
-npm install @capacitor/push-notifications
+npm install @capacitor/haptics --legacy-peer-deps
 ```
-- Use Firebase Cloud Messaging (FCM) for cross-platform delivery
-- Send reminders for upcoming subscription renewals
+- **Implemented:** `src/utils/haptics.ts` — exported helpers: `hapticLight`, `hapticMedium`, `hapticHeavy`, `hapticSuccess`, `hapticError`, `hapticWarning`
+- **Wired into:**
+  - `SubscriptionCard.tsx` — heavy tap when delete button pressed; success/error after delete confirms
+  - `SubscriptionForm.tsx` — success/error after save
+  - `bills/BillCard.tsx` — same delete pattern as SubscriptionCard
+- **Web behaviour:** All calls are silently no-ops in the browser — no guard needed, `@capacitor/haptics` catches and ignores missing plugin errors automatically.
 
-### Biometric Authentication
+### Local Renewal Notifications ✅ Done
+> Note: Implemented with `@capacitor/local-notifications` (no server/FCM needed) instead of `@capacitor/push-notifications`. Local notifications cover the core use-case (renewal reminders) without requiring Firebase Cloud Messaging setup. Add FCM later if you need server-triggered pushes.
+
 ```bash
-npm install @capacitor/biometrics
+npm install @capacitor/local-notifications --legacy-peer-deps
 ```
-- Face ID / Touch ID / fingerprint unlock
+- **Implemented:** `src/services/localNotifications.ts`
+  - `createRenewalChannel()` — creates Android notification channel (no-op on iOS); call once on app start
+  - `requestNotificationPermission()` — prompts OS permission dialog
+  - `scheduleRenewalNotifications(subscriptions)` — cancels previous batch (IDs 1000–1999), then schedules 9 AM alerts for active subscriptions renewing in 1, 3, or 7 days
+- **Wired into:** `App.tsx` via `<NotificationManager>` component — bootstraps channel + permission on mount, reschedules whenever subscriptions list changes
+- **To add FCM later:** Install `@capacitor/push-notifications`, register the FCM token in `authService.ts` after login, send pushes from a Cloud Function triggered by Firestore writes.
 
-### Haptic Feedback
+### Biometric Authentication ✅ Done
+> Note: `@capacitor/biometrics` is not an official Capacitor package. Using `capacitor-native-biometric` (the de-facto standard community plugin).
+
 ```bash
-npm install @capacitor/haptics
+npm install capacitor-native-biometric --legacy-peer-deps
 ```
-- Tactile confirmation on subscription add/delete
+- **Implemented:**
+  - `src/hooks/useBiometric.ts` — checks hardware availability, persists opt-in to `localStorage`, manages locked/unlocked state, exposes `toggle()` / `unlock()` / `lock()`
+  - `src/components/BiometricLock.tsx` — full-screen lock overlay with Face ID / Touch ID icon and tap-to-unlock button
+- **Wired into:** `App.tsx` — shows `<BiometricLock>` when `biometric.isLocked === true`; locks on `appStateChange` (app backgrounded)
+- **How to enable for a user:** Call `biometric.toggle()` from a settings UI. A toggle can be added to the Navbar or a future Settings page. The preference is stored in `localStorage` under key `trackr_biometric_enabled`.
+- **After `npx cap sync`:** No extra native config needed for `capacitor-native-biometric` on iOS (uses LocalAuthentication framework automatically). On Android, add `USE_BIOMETRIC` permission to `AndroidManifest.xml`:
+  ```xml
+  <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+  ```
 
-### Deep Linking
-- Open the app from email links (e.g. `trackr://dashboard`)
+### Deep Linking ✅ Done
+- **Implemented:** `App.tsx` via `<DeepLinkHandler>` component — listens for `appUrlOpen` events from `@capacitor/app` and calls React Router's `navigate()` to the matching path
+- **Supported routes:**
+  | URL | Opens |
+  |---|---|
+  | `trackr://dashboard` | Dashboard |
+  | `trackr://bills` | Bills |
+  | `trackr://documents` | Document Vault |
+  | `trackr://goals-habits` | Goals & Habits |
+- **Still needed — native config (after `npx cap sync`):**
+
+  **Android** — add inside `<activity>` in `android/app/src/main/AndroidManifest.xml`:
+  ```xml
+  <intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data android:scheme="trackr" />
+  </intent-filter>
+  ```
+
+  **iOS** — add to `ios/App/App/Info.plist`:
+  ```xml
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLSchemes</key>
+      <array><string>trackr</string></array>
+    </dict>
+  </array>
+  ```
+
+### Push Notifications (FCM) — Future
+```bash
+npm install @capacitor/push-notifications --legacy-peer-deps
+```
+- Use Firebase Cloud Messaging for server-triggered pushes (e.g. renewal alerts sent from Cloud Functions)
+- Requires FCM project setup, APNs certificate (iOS), and a server-side trigger
+- Local notifications (already implemented above) cover the common use-case without this complexity
 
 ---
 
@@ -340,4 +398,4 @@ trackr/
 | 2 | iOS platform setup + icons | ✅ Done |
 | 2a | Free iPhone testing (Xcode or AltStore) | Ready — needs Mac/AltStore setup |
 | 3 | App Store + Play Store submission | Future — after iPhone testing |
-| 4 | Push notifications, biometrics, haptics | Ongoing |
+| 4 | Haptics, local notifications, biometrics, deep linking | ✅ Done (JS layer) — needs native config snippets for deep linking & biometric Android permission |

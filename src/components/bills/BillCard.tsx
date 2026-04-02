@@ -6,6 +6,7 @@ import { ConfirmDialog } from '../ConfirmDialog';
 import { deleteBill } from '../../services/billsService';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useToastStore } from '../../store/useToastStore';
+import { hapticHeavy, hapticSuccess, hapticError } from '../../utils/haptics';
 
 interface BillCardProps {
   bill: Bill;
@@ -35,13 +36,21 @@ export const BillCard: React.FC<BillCardProps> = ({ bill, onEdit }) => {
     setDeleting(true);
     try {
       await deleteBill(user.uid, bill.id);
+      await hapticSuccess();
       addToast(`"${bill.name}" deleted`, 'success');
       setShowConfirm(false);
     } catch {
+      await hapticError();
       addToast('Failed to delete bill', 'error');
     } finally {
       setDeleting(false);
     }
+  };
+
+  // Haptic on delete button tap (before confirm dialog opens)
+  const handleDeletePress = async () => {
+    await hapticHeavy();
+    setShowConfirm(true);
   };
 
   return (
@@ -78,7 +87,7 @@ export const BillCard: React.FC<BillCardProps> = ({ bill, onEdit }) => {
                 </svg>
               </button>
               <button
-                onClick={() => setShowConfirm(true)}
+                onClick={handleDeletePress}
                 className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-60 hover:opacity-100"
                 title="Delete"
               >

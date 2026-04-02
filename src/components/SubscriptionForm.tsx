@@ -6,6 +6,7 @@ import type { Subscription, SubscriptionFormData } from '../types/subscription';
 import { addSubscription, updateSubscription } from '../services/subscriptionService';
 import { useAuthStore } from '../store/useAuthStore';
 import { useToastStore } from '../store/useToastStore';
+import { hapticSuccess, hapticError } from '../utils/haptics';
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -125,13 +126,16 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
       const formData: SubscriptionFormData = { ...data };
       if (editingSubscription) {
         await updateSubscription(user.uid, editingSubscription.id, formData);
+        await hapticSuccess();
         addToast('Subscription updated successfully', 'success');
       } else {
         await addSubscription(user.uid, formData);
+        await hapticSuccess();
         addToast('Subscription added successfully', 'success');
       }
       onClose();
     } catch {
+      await hapticError();
       addToast('Something went wrong. Please try again.', 'error');
     }
   };

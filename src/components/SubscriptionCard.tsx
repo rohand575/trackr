@@ -6,6 +6,7 @@ import { ConfirmDialog } from './ConfirmDialog';
 import { deleteSubscription } from '../services/subscriptionService';
 import { useAuthStore } from '../store/useAuthStore';
 import { useToastStore } from '../store/useToastStore';
+import { hapticHeavy, hapticSuccess, hapticError } from '../utils/haptics';
 
 interface SubscriptionCardProps {
   subscription: Subscription;
@@ -47,13 +48,21 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ subscription
     setDeleting(true);
     try {
       await deleteSubscription(user.uid, subscription.id);
+      await hapticSuccess();
       addToast(`"${subscription.name}" deleted`, 'success');
       setShowConfirm(false);
     } catch {
+      await hapticError();
       addToast('Failed to delete subscription', 'error');
     } finally {
       setDeleting(false);
     }
+  };
+
+  // Haptic on delete button tap (before confirm dialog opens)
+  const handleDeletePress = async () => {
+    await hapticHeavy();
+    setShowConfirm(true);
   };
 
   return (
@@ -100,7 +109,7 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ subscription
                 </svg>
               </button>
               <button
-                onClick={() => setShowConfirm(true)}
+                onClick={handleDeletePress}
                 className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-60 hover:opacity-100"
                 title="Delete"
               >
