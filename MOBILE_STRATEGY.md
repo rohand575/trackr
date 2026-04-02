@@ -99,37 +99,148 @@ npm run cap:sync
 
 ---
 
-## Phase 2: iOS + App Store Submission
-**Effort: ~1 week (includes store review wait time)**
+## Phase 2: iOS Platform Setup
+**Effort: ~1–2 days setup, then test and iterate**
 
-> ⚠️ **iOS builds require a Mac with Xcode.** On Windows, use GitHub Actions (macOS runner) for CI builds, or defer iOS until a Mac is available.
+> ⚠️ **iOS builds require a Mac with Xcode.** On Windows, use GitHub Actions (macOS runner) for CI builds. The project files (`ios/`) can be set up on Windows; building and deploying to device requires macOS.
 
-### What to do
-- [ ] Set up Apple Developer account — $99/year (required for App Store)
-- [ ] Set up Google Play Developer account — $25 one-time
-- [ ] Add iOS platform (`npx cap add ios`)
-- [ ] Generate all icon/splash screen sizes with `@capacitor/assets`
-- [ ] Configure Android signing keystore (Android Studio)
-- [ ] Configure iOS provisioning profiles and certificates (Xcode)
-- [ ] Submit to Google Play (review: 1–3 days)
-- [ ] Submit to Apple App Store (review: 1–7 days)
+### What was done (completed on Windows)
+- [x] Install `@capacitor/ios` (already in package.json)
+- [x] Add iOS platform (`npx cap add ios`) — creates `ios/` Xcode project folder
+- [x] Install `@capacitor/assets` and generate all icon sizes
+- [x] Add iOS convenience scripts to `package.json`
 
 ### Commands
 ```bash
-npm install @capacitor/assets --save-dev
-npx capacitor-assets generate
-
+# Already done — for reference:
+npm install @capacitor/assets --save-dev --legacy-peer-deps
 npx cap add ios
-npx cap open ios   # Opens Xcode
+npx capacitor-assets generate   # or: npm run cap:assets
+
+# Open in Xcode (run on a Mac):
+npm run cap:open:ios    # npx cap open ios
+npm run cap:run:ios     # build & run on connected device/simulator
 ```
 
-### Deliverable
-- Trackr live on Google Play Store
-- Trackr live on Apple App Store
+### Icon source files
+Icons and splash screens are generated from `assets/` folder:
+- `assets/icon-only.png` — square app icon (512×512, ideally 1024×1024)
+- `assets/icon-foreground.png` — adaptive icon foreground (Android)
+
+> **Note:** Current source icons are 512×512 (from PWA build). Replace with 1024×1024 sources for best quality — especially for the App Store, which requires a 1024×1024 marketing icon. Re-run `npm run cap:assets` after swapping.
+
+### After every web change
+```bash
+npm run cap:sync   # builds web app + syncs to ios/ and android/
+```
 
 ---
 
-## Phase 3: Native Enhancements
+## Phase 2a: Free iPhone Installation (No Developer Account)
+**Goal: Test on a real iPhone before committing to $99/year**
+
+> There is no way to install a custom iOS app on an iPhone through the App Store without an Apple Developer account. However, there are two **free** options using a plain Apple ID.
+
+---
+
+### Method 1: Xcode Free Provisioning ✅ Simplest (Mac required)
+
+This is the easiest method. Xcode can sign and deploy the app to your iPhone using any free Apple ID — no developer account needed.
+
+**Limitations:**
+- App certificate expires every **7 days**. After 7 days, open Xcode and rebuild to re-deploy.
+- Max 3 apps per device on a free Apple ID.
+- Some Xcode capabilities (push notifications, in-app purchases) require a paid account — not relevant for Trackr.
+
+**Steps:**
+
+1. On a Mac: clone the repo and run `npm run cap:sync` to get the latest build into `ios/`
+2. Open Xcode: `npm run cap:open:ios` (or open `ios/App/App.xcworkspace` directly)
+3. Connect your iPhone via USB cable
+4. In Xcode: select your iPhone as the build target (top bar, next to ▶ button)
+5. Go to **Xcode → Settings → Accounts** → add your Apple ID (the free one, same as iCloud)
+6. In the project navigator, click **App** (the top-level project) → **Signing & Capabilities**
+7. Under **Team**, select your personal Apple ID
+8. Xcode will auto-generate a free development certificate and provisioning profile
+9. Click **▶ Run** — Xcode builds and installs the app on your iPhone
+10. On iPhone: **Settings → General → VPN & Device Management → [your Apple ID] → Trust**
+11. Done — open Trackr from your home screen
+
+**Re-deploying after 7 days:**
+- Just connect iPhone, open Xcode, click Run again. Takes ~1 minute.
+
+---
+
+### Method 2: GitHub Actions + AltStore (Windows-friendly, more complex)
+
+Use this if you don't have access to a Mac. It involves building the IPA in CI and sideloading it onto the iPhone.
+
+**How it works:**
+- GitHub Actions has free macOS runners (2000 min/month on free tier) — enough to build the IPA
+- AltStore is an app that installs on iPhone and re-signs apps using your Apple ID, refreshing every 7 days automatically
+
+**Limitations:**
+- Same 7-day expiry as Method 1 (free Apple ID limit)
+- Requires AltServer running on your Windows PC with iTunes installed to auto-refresh
+- Initial setup is more involved than Method 1
+
+**Steps:**
+
+1. **Install AltServer on Windows:**
+   - Download AltServer from altstore.io
+   - Install iTunes from Apple's website (the non-Microsoft-Store version — important)
+   - Run AltServer in the system tray
+
+2. **Install AltStore on iPhone:**
+   - Connect iPhone via USB
+   - Click the AltServer tray icon → Install AltStore → select your iPhone
+   - Enter your Apple ID when prompted
+   - On iPhone: **Settings → General → VPN & Device Management → Trust** your Apple ID
+
+3. **Build the IPA via GitHub Actions:**
+   - Push the `ios/` folder to GitHub (it's already set up to be committed)
+   - Create a GitHub Actions workflow (`.github/workflows/ios-build.yml`) that:
+     - Runs on macOS runner
+     - Runs `npm run build && npx cap sync`
+     - Uses `xcodebuild` with a development certificate to produce an IPA
+   - Download the IPA artifact from the Actions run
+
+4. **Sideload the IPA:**
+   - Open AltStore on iPhone → My Apps → **+** → select the downloaded IPA
+   - AltStore re-signs it with your Apple ID and installs it
+
+5. **Auto-refresh:**
+   - AltStore refreshes installed apps every 7 days when AltServer is running and iPhone is on the same Wi-Fi
+
+> **Recommendation:** Use Method 1 (Xcode) if you have any access to a Mac — even borrowing one for 10 minutes is enough to do the initial install. Method 2 is the Windows fallback.
+
+---
+
+## Phase 3: App Store + Play Store Submission *(Future — skip until satisfied with iPhone testing)*
+
+> ⏳ **Deferred** — complete iPhone testing with free provisioning first, then decide whether to pay for Apple Developer account.
+
+### When you're ready
+- [ ] Create Apple Developer account — $99/year at developer.apple.com
+- [ ] Create Google Play Developer account — $25 one-time at play.google.com/console
+- [ ] Configure iOS provisioning profiles and signing certificates (Xcode → Signing & Capabilities, set to Distribution)
+- [ ] Configure Android signing keystore (Android Studio → Build → Generate Signed APK)
+- [ ] Submit to Google Play (review: 1–3 days)
+- [ ] Submit to Apple App Store (review: 1–7 days)
+
+### What changes for App Store builds vs. free provisioning
+- Signing profile changes from **Development** to **Distribution** in Xcode
+- Bundle ID (`com.trackr.app`) must be registered in App Store Connect
+- Need to provide 1024×1024 app icon, screenshots, and store description
+- No 7-day expiry — App Store apps don't expire
+
+### Notes
+- The `ios/` project and all `npm run cap:*` scripts are already set up — nothing needs to change in the codebase to go from free testing to App Store submission. It's just a signing configuration change in Xcode.
+- Keep `com.trackr.app` as the App ID — it's already set in `capacitor.config.ts`. Register this exact bundle ID in App Store Connect when the time comes.
+
+---
+
+## Phase 4: Native Enhancements
 **Effort: Ongoing (add as needed)**
 
 Optional native features that go beyond what the web can do.
@@ -167,6 +278,11 @@ npm run build        # Rebuild the web app (dist/)
 npx cap sync         # Push built files to android/ and ios/ native projects
 ```
 
+Or use the convenience script:
+```bash
+npm run cap:sync     # does both in one step
+```
+
 That's it. The native apps always wrap the latest web build. You do **not** need to resubmit to the App Store for web-only changes if you use Capacitor's live update option (Capacitor Live Updates / Appflow — optional paid service). For most updates, a normal App Store release is the standard path.
 
 ---
@@ -177,6 +293,9 @@ That's it. The native apps always wrap the latest web build. You do **not** need
 trackr/
 ├── src/                  # Web app source (React)
 ├── dist/                 # Built web app (Capacitor reads this)
+├── assets/               # Source icons for @capacitor/assets (commit this)
+│   ├── icon-only.png     # 512×512 (replace with 1024×1024 for best quality)
+│   └── icon-foreground.png  # Adaptive icon foreground (Android)
 ├── android/              # Android Studio project (commit this)
 ├── ios/                  # Xcode project (commit this, build on Mac)
 ├── capacitor.config.ts   # Capacitor configuration
@@ -184,7 +303,7 @@ trackr/
 └── ...
 ```
 
-> Commit `android/` and `ios/` directories to git. They are generated once and updated by `cap sync`.
+> Commit `android/`, `ios/`, and `assets/` directories to git.
 
 ---
 
@@ -192,10 +311,12 @@ trackr/
 
 | Item | Cost | Notes |
 |---|---|---|
-| Apple Developer Account | $99/year | Required for App Store distribution |
-| Google Play Developer | $25 one-time | Required for Play Store |
+| Free Apple ID | Free | Works for device testing via Xcode (7-day expiry) |
+| Apple Developer Account | $99/year | Required for App Store — defer until ready |
+| Google Play Developer | $25 one-time | Required for Play Store — defer until ready |
 | Capacitor (open source) | Free | Apache 2.0 license |
 | GitHub Actions macOS runner | Free (2000 min/month) | For iOS CI builds on Windows |
+| AltStore | Free | Sideloading tool for Windows-based iPhone testing |
 
 ---
 
@@ -203,9 +324,9 @@ trackr/
 
 | Phase | What | Effort |
 |---|---|---|
-| 0 | PWA — browser installable, offline support | 1–2 days |
-| 1 | Capacitor → Android APK | 3–5 days |
-| 2 | iOS + App Store + Play Store submission | ~1 week |
-| 3 | Push notifications, biometrics, haptics | Ongoing |
-
-**Time to get on both stores: ~2–3 weeks total** (dominated by Apple review wait)
+| 0 | PWA — browser installable, offline support | ✅ Done |
+| 1 | Capacitor → Android APK | ✅ Done |
+| 2 | iOS platform setup + icons | ✅ Done |
+| 2a | Free iPhone testing (Xcode or AltStore) | Ready — needs Mac/AltStore setup |
+| 3 | App Store + Play Store submission | Future — after iPhone testing |
+| 4 | Push notifications, biometrics, haptics | Ongoing |
