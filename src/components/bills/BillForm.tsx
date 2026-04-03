@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { useForm, type Resolver } from 'react-hook-form';
+import { useForm, Controller, type Resolver } from 'react-hook-form';
+import { ProviderCombobox } from '../ProviderCombobox';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { Bill, BillFormData } from '../../types/bills';
@@ -68,6 +69,7 @@ export const BillForm: React.FC<BillFormProps> = ({
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema) as Resolver<FormValues>,
@@ -185,11 +187,19 @@ export const BillForm: React.FC<BillFormProps> = ({
               />
             </FormField>
 
-            <FormField label="Provider" error={errors.provider?.message} required>
-              <input
-                {...register('provider')}
-                placeholder="e.g. BESCOM, BBMP, LIC"
-                className={inputClass}
+            <FormField label="Provider" required>
+              <Controller
+                name="provider"
+                control={control}
+                render={({ field }) => (
+                  <ProviderCombobox
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    error={errors.provider?.message}
+                    placeholder="e.g. BESCOM, BBMP, LIC"
+                  />
+                )}
               />
             </FormField>
 

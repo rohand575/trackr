@@ -1,5 +1,39 @@
 import React, { useState } from 'react';
 import type { Subscription } from '../types/subscription';
+import { PROVIDERS } from '../data/providers';
+
+function getProviderLogoUrl(providerName: string): string | null {
+  if (!providerName) return null;
+  const lower = providerName.toLowerCase().trim();
+  const found = PROVIDERS.find(
+    (p) =>
+      p.name.toLowerCase() === lower ||
+      p.aliases?.some((a) => a.toLowerCase() === lower)
+  );
+  return found ? `https://logo.clearbit.com/${found.domain}` : null;
+}
+
+const ProviderIcon: React.FC<{ provider: string; fallback: React.ReactNode; bg: string }> = ({
+  provider,
+  fallback,
+  bg,
+}) => {
+  const [imgError, setImgError] = useState(false);
+  const logoUrl = getProviderLogoUrl(provider);
+
+  if (!logoUrl || imgError) {
+    return <span className="text-lg">{fallback}</span>;
+  }
+
+  return (
+    <img
+      src={logoUrl}
+      alt={provider}
+      className="w-6 h-6 object-contain rounded"
+      onError={() => setImgError(true)}
+    />
+  );
+};
 import { formatCurrency, formatDate, getDaysUntilPayment } from '../utils/formatters';
 import { getCategoryConfig } from '../utils/categoryColors';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -89,9 +123,13 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ subscription
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="flex items-start gap-3 min-w-0">
               <div
-                className={`w-10 h-10 rounded-xl ${config.bg} flex items-center justify-center shrink-0 text-lg`}
+                className={`w-10 h-10 rounded-xl ${config.bg} flex items-center justify-center shrink-0`}
               >
-                {config.icon}
+                <ProviderIcon
+                  provider={subscription.provider}
+                  fallback={config.icon}
+                  bg={config.bg}
+                />
               </div>
               <div className="min-w-0">
                 <h3 className="font-semibold text-gray-900 truncate">{subscription.name}</h3>
@@ -132,18 +170,6 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ subscription
 
           {/* Meta info */}
           <div className="grid grid-cols-2 gap-2 mb-4">
-            <div className="flex items-center gap-1.5 text-xs text-gray-500">
-              <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <span className={urgency === 'urgent' ? 'text-red-600 font-medium' : urgency === 'soon' ? 'text-amber-600 font-medium' : ''}>
-                {daysUntil < 0
-                  ? 'Overdue'
-                  : daysUntil === 0
-                  ? 'Due today'
-                  : `${daysUntil}d left`}
-              </span>
-            </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />

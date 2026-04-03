@@ -1,0 +1,101 @@
+export interface ProviderInfo {
+  name: string;
+  domain: string;
+  aliases?: string[];
+}
+
+export const PROVIDERS: ProviderInfo[] = [
+  // Streaming
+  { name: 'Netflix', domain: 'netflix.com' },
+  { name: 'Spotify', domain: 'spotify.com' },
+  { name: 'YouTube Premium', domain: 'youtube.com', aliases: ['youtube'] },
+  { name: 'Disney+', domain: 'disneyplus.com', aliases: ['disney plus', 'disney'] },
+  { name: 'Hotstar', domain: 'hotstar.com', aliases: ['disney+ hotstar', 'disney hotstar'] },
+  { name: 'Amazon Prime', domain: 'amazon.com', aliases: ['prime video', 'amazon'] },
+  { name: 'Apple TV+', domain: 'apple.com', aliases: ['apple tv', 'apple'] },
+  { name: 'HBO Max', domain: 'max.com', aliases: ['hbo', 'max'] },
+  { name: 'Hulu', domain: 'hulu.com' },
+  { name: 'Audible', domain: 'audible.com' },
+  { name: 'Sky', domain: 'sky.de', aliases: ['sky deutschland'] },
+  { name: 'RTL+', domain: 'rtlplus.de', aliases: ['rtl plus', 'rtl'] },
+  // AI
+  { name: 'Claude', domain: 'anthropic.com', aliases: ['anthropic'] },
+  { name: 'ChatGPT', domain: 'openai.com', aliases: ['openai', 'open ai'] },
+  { name: 'Gemini', domain: 'google.com', aliases: ['google gemini', 'bard'] },
+  { name: 'Midjourney', domain: 'midjourney.com' },
+  { name: 'Perplexity', domain: 'perplexity.ai' },
+  // Productivity & Office
+  { name: 'Microsoft 365', domain: 'microsoft.com', aliases: ['office 365', 'microsoft', 'office'] },
+  { name: 'Google Workspace', domain: 'workspace.google.com', aliases: ['google workspace', 'gsuite', 'g suite'] },
+  { name: 'Notion', domain: 'notion.so' },
+  { name: 'Dropbox', domain: 'dropbox.com' },
+  { name: 'Evernote', domain: 'evernote.com' },
+  { name: 'Grammarly', domain: 'grammarly.com' },
+  { name: 'Loom', domain: 'loom.com' },
+  { name: 'Canva', domain: 'canva.com' },
+  { name: 'Figma', domain: 'figma.com' },
+  // Cloud & Dev
+  { name: 'GitHub', domain: 'github.com' },
+  { name: 'GitLab', domain: 'gitlab.com' },
+  { name: 'Vercel', domain: 'vercel.com' },
+  { name: 'Render', domain: 'render.com' },
+  { name: 'Heroku', domain: 'heroku.com' },
+  { name: 'DigitalOcean', domain: 'digitalocean.com', aliases: ['digital ocean'] },
+  { name: 'AWS', domain: 'aws.amazon.com', aliases: ['amazon web services'] },
+  { name: 'Google Cloud', domain: 'cloud.google.com', aliases: ['gcp', 'google cloud platform'] },
+  { name: 'Azure', domain: 'azure.microsoft.com', aliases: ['microsoft azure'] },
+  { name: 'JetBrains', domain: 'jetbrains.com' },
+  { name: 'Postman', domain: 'postman.com' },
+  { name: 'Sentry', domain: 'sentry.io' },
+  { name: 'Datadog', domain: 'datadoghq.com', aliases: ['data dog'] },
+  { name: 'Linear', domain: 'linear.app' },
+  { name: 'Jira', domain: 'atlassian.com', aliases: ['atlassian', 'confluence'] },
+  { name: 'Slack', domain: 'slack.com' },
+  { name: 'Zoom', domain: 'zoom.us' },
+  { name: 'Intercom', domain: 'intercom.com' },
+  { name: 'Mailchimp', domain: 'mailchimp.com' },
+  { name: 'Twilio', domain: 'twilio.com' },
+  // Security & VPN
+  { name: 'NordVPN', domain: 'nordvpn.com', aliases: ['nord vpn'] },
+  { name: 'ExpressVPN', domain: 'expressvpn.com', aliases: ['express vpn'] },
+  { name: '1Password', domain: '1password.com', aliases: ['one password', 'onepassword'] },
+  { name: 'Bitwarden', domain: 'bitwarden.com' },
+  { name: 'LastPass', domain: 'lastpass.com', aliases: ['last pass'] },
+  // Education
+  { name: 'Coursera', domain: 'coursera.org' },
+  { name: 'Udemy', domain: 'udemy.com' },
+  { name: 'Duolingo', domain: 'duolingo.com' },
+  { name: 'LinkedIn Learning', domain: 'linkedin.com', aliases: ['linkedin', 'lynda'] },
+  { name: 'Skillshare', domain: 'skillshare.com' },
+  // Health
+  { name: 'Headspace', domain: 'headspace.com' },
+  { name: 'Calm', domain: 'calm.com' },
+  // Gaming
+  { name: 'PlayStation Plus', domain: 'playstation.com', aliases: ['ps plus', 'playstation', 'psn'] },
+  { name: 'Xbox Game Pass', domain: 'xbox.com', aliases: ['xbox', 'microsoft gaming'] },
+  { name: 'Nintendo Switch Online', domain: 'nintendo.com', aliases: ['nintendo'] },
+  { name: 'Steam', domain: 'steampowered.com', aliases: ['valve'] },
+  // India
+  { name: 'Jio', domain: 'jio.com', aliases: ['jio cinema', 'jio saavn', 'reliance jio'] },
+  { name: 'Airtel', domain: 'airtel.in', aliases: ['bharti airtel', 'airtel xstream'] },
+  { name: 'BSNL', domain: 'bsnl.co.in' },
+  { name: 'Swiggy', domain: 'swiggy.com' },
+  { name: 'Zomato', domain: 'zomato.com' },
+  { name: 'Ola', domain: 'olacabs.com', aliases: ['ola cabs'] },
+  { name: 'Zerodha', domain: 'zerodha.com' },
+  // Germany
+  { name: 'Techniker Krankenkasse', domain: 'tk.de', aliases: ['tk', 'techniker'] },
+  { name: 'AOK', domain: 'aok.de' },
+  { name: 'Deutsche Bahn', domain: 'bahn.de', aliases: ['db', 'bahn', 'deutsche bahn'] },
+  { name: 'Telekom', domain: 'telekom.de', aliases: ['deutsche telekom', 'magenta'] },
+  { name: 'Vodafone', domain: 'vodafone.de', aliases: ['vodafone de'] },
+  { name: 'O2', domain: 'o2online.de', aliases: ['o2 germany', 'o2 de'] },
+  { name: 'REWE', domain: 'rewe.de' },
+  { name: 'Lidl', domain: 'lidl.de', aliases: ['lidl plus'] },
+  // Finance
+  { name: 'PayPal', domain: 'paypal.com' },
+  { name: 'N26', domain: 'n26.com' },
+  { name: 'Wise', domain: 'wise.com', aliases: ['transferwise'] },
+  { name: 'Revolut', domain: 'revolut.com' },
+  { name: 'Adobe', domain: 'adobe.com', aliases: ['adobe creative cloud', 'adobe cc'] },
+];

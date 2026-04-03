@@ -7,6 +7,39 @@ import { deleteBill } from '../../services/billsService';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useToastStore } from '../../store/useToastStore';
 import { hapticHeavy, hapticSuccess, hapticError } from '../../utils/haptics';
+import { PROVIDERS } from '../../data/providers';
+
+function getProviderLogoUrl(providerName: string): string | null {
+  if (!providerName) return null;
+  const lower = providerName.toLowerCase().trim();
+  const found = PROVIDERS.find(
+    (p) =>
+      p.name.toLowerCase() === lower ||
+      p.aliases?.some((a) => a.toLowerCase() === lower)
+  );
+  return found ? `https://logo.clearbit.com/${found.domain}` : null;
+}
+
+const ProviderIcon: React.FC<{ provider: string; fallback: React.ReactNode }> = ({
+  provider,
+  fallback,
+}) => {
+  const [imgError, setImgError] = useState(false);
+  const logoUrl = getProviderLogoUrl(provider);
+
+  if (!logoUrl || imgError) {
+    return <span className="text-lg">{fallback}</span>;
+  }
+
+  return (
+    <img
+      src={logoUrl}
+      alt={provider}
+      className="w-6 h-6 object-contain rounded"
+      onError={() => setImgError(true)}
+    />
+  );
+};
 
 interface BillCardProps {
   bill: Bill;
@@ -67,9 +100,9 @@ export const BillCard: React.FC<BillCardProps> = ({ bill, onEdit }) => {
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="flex items-start gap-3 min-w-0">
               <div
-                className={`w-10 h-10 rounded-xl ${config.bg} flex items-center justify-center shrink-0 text-lg`}
+                className={`w-10 h-10 rounded-xl ${config.bg} flex items-center justify-center shrink-0`}
               >
-                {config.icon}
+                <ProviderIcon provider={bill.provider} fallback={config.icon} />
               </div>
               <div className="min-w-0">
                 <h3 className="font-semibold text-gray-900 truncate">{bill.name}</h3>
