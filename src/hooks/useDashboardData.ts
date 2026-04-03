@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
-import { useSubscriptions } from './useSubscriptions';
-import { useBills } from './useBills';
+import { usePayments } from './usePayments';
 import { useGoals } from './useGoals';
 import { useHabits } from './useHabits';
 import { useDocuments } from './useDocuments';
@@ -108,21 +107,21 @@ const isHabitDueToday = (habit: Habit): boolean => {
 };
 
 export const useDashboardData = (): DashboardData => {
-  const { subscriptions, loading: subLoading } = useSubscriptions();
-  const { bills, loading: billsLoading } = useBills();
+  const { payments, loading: paymentsLoading } = usePayments();
   const { goals, loading: goalsLoading } = useGoals();
   const { habits, loading: habitsLoading } = useHabits();
   const { documents, loading: docsLoading } = useDocuments();
 
-  const isLoading = subLoading || billsLoading || goalsLoading || habitsLoading || docsLoading;
+  const isLoading = paymentsLoading || goalsLoading || habitsLoading || docsLoading;
 
   const computed = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
     const now = Date.now();
 
     // ---- Financial ----
-    const activeSubs = subscriptions.filter((s) => s.status === 'Active');
-    const activeBills = bills.filter((b) => b.status === 'Active');
+    const activePayments = payments.filter((p) => p.status === 'Active');
+    const activeSubs = activePayments.filter((p) => p.type === 'subscription');
+    const activeBills = activePayments.filter((p) => p.type === 'bill');
 
     const subMonthlyEUR = activeSubs
       .filter((s) => s.currency === 'EUR')
@@ -141,41 +140,29 @@ export const useDashboardData = (): DashboardData => {
     const monthlyBurnINR = subMonthlyINR + billMonthlyINR;
 
     // ---- Upcoming payments (next 7 days) ----
-    const upcomingPayments: UpcomingPayment[] = [
-      ...activeSubs.map((s) => ({
-        id: s.id,
-        name: s.name,
-        amount: s.amount,
-        currency: s.currency as Currency,
-        daysUntil: getDaysUntil(s.nextPaymentDate),
-        date: s.nextPaymentDate,
-        source: 'subscription' as const,
-        category: s.category,
-      })),
-      ...activeBills.map((b) => ({
-        id: b.id,
-        name: b.name,
-        amount: b.amount,
-        currency: b.currency as Currency,
-        daysUntil: getDaysUntil(b.dueDate),
-        date: b.dueDate,
-        source: 'bill' as const,
-        category: b.category,
-      })),
-    ]
+    const upcomingPayments: UpcomingPayment[] = activePayments
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        amount: p.amount,
+        currency: p.currency as Currency,
+        daysUntil: getDaysUntil(p.nextPaymentDate),
+        date: p.nextPaymentDate,
+        source: p.type as 'subscription' | 'bill',
+        category: p.category,
+      }))
       .filter((p) => p.daysUntil >= 0 && p.daysUntil <= 7)
       .sort((a, b) => a.daysUntil - b.daysUntil);
 
     // ---- Category breakdown ----
     const buildCategoryBreakdown = (currency: 'EUR' | 'INR'): CategorySpend[] => {
       const map = new Map<Category, number>();
-      [
-        ...activeSubs.filter((s) => s.currency === currency),
-        ...activeBills.filter((b) => b.currency === currency),
-      ].forEach((item) => {
-        const monthly = getMonthlyAmount(item.amount, item.billingCycle);
-        map.set(item.category, (map.get(item.category) ?? 0) + monthly);
-      });
+      activePayments
+        .filter((p) => p.currency === currency)
+        .forEach((item) => {
+          const monthly = getMonthlyAmount(item.amount, item.billingCycle);
+          map.set(item.category, (map.get(item.category) ?? 0) + monthly);
+        });
       const total = Array.from(map.values()).reduce((a, b) => a + b, 0);
       return Array.from(map.entries())
         .map(([category, amount]) => ({
@@ -268,7 +255,7 @@ export const useDashboardData = (): DashboardData => {
           id: `pay-today-${p.id}`,
           severity: 'critical',
           message: `${p.name} is due today`,
-          link: p.source === 'subscription' ? '/subscriptions' : '/bills',
+          link: '/payments',
           icon: p.source === 'subscription' ? '💳' : '🧾',
         });
       });
@@ -280,7 +267,7 @@ export const useDashboardData = (): DashboardData => {
           id: `pay-soon-${p.id}`,
           severity: 'warning',
           message: `${p.name} due in ${p.daysUntil} day${p.daysUntil === 1 ? '' : 's'}`,
-          link: p.source === 'subscription' ? '/subscriptions' : '/bills',
+          link: '/payments',
           icon: p.source === 'subscription' ? '💳' : '🧾',
         });
       });
@@ -359,7 +346,7 @@ export const useDashboardData = (): DashboardData => {
       totalValidDocs,
       alerts,
     };
-  }, [subscriptions, bills, goals, habits, documents]);
+  }, [payments, goals, habits, documents]);
 
   return { isLoading, ...computed };
 };

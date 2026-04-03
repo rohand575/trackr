@@ -3,8 +3,7 @@ import { Navbar } from '../components/Navbar';
 import { useAuthStore } from '../store/useAuthStore';
 import { useToastStore } from '../store/useToastStore';
 import { logoutUser } from '../services/authService';
-import { useSubscriptionStore } from '../store/useSubscriptionStore';
-import { useBillsStore } from '../store/useBillsStore';
+import { usePaymentsStore } from '../store/usePaymentsStore';
 import { useDocumentsStore } from '../store/useDocumentsStore';
 import { generateIcsContent, downloadIcsFile } from '../utils/icsExport';
 import type { BiometricState } from '../hooks/useBiometric';
@@ -16,8 +15,7 @@ interface SettingsProps {
 export const Settings: React.FC<SettingsProps> = ({ biometric }) => {
   const { user } = useAuthStore();
   const { addToast } = useToastStore();
-  const { subscriptions } = useSubscriptionStore();
-  const { bills } = useBillsStore();
+  const { payments } = usePaymentsStore();
   const { documents } = useDocumentsStore();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
@@ -37,7 +35,15 @@ export const Settings: React.FC<SettingsProps> = ({ biometric }) => {
   const handleExportCalendar = async () => {
     setIsExporting(true);
     try {
-      const content = generateIcsContent(subscriptions, bills, documents);
+      const subs = payments.filter((p) => p.type === 'subscription');
+      const bills = payments
+        .filter((p) => p.type === 'bill')
+        .map((p) => ({ ...p, dueDate: p.nextPaymentDate }));
+      const content = generateIcsContent(
+        subs as Parameters<typeof generateIcsContent>[0],
+        bills as Parameters<typeof generateIcsContent>[1],
+        documents,
+      );
       downloadIcsFile(content);
       addToast('Calendar exported successfully', 'success');
     } catch {

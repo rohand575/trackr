@@ -3,33 +3,37 @@ import { useForm, Controller, type Resolver } from 'react-hook-form';
 import { ProviderCombobox } from './ProviderCombobox';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { Subscription, SubscriptionFormData } from '../types/subscription';
+import type { PaymentItem, PaymentFormData } from '../types/payment';
 import { addSubscription, updateSubscription } from '../services/subscriptionService';
+import { addBill, updateBill } from '../services/billsService';
 import { useAuthStore } from '../store/useAuthStore';
 import { useToastStore } from '../store/useToastStore';
 import { hapticSuccess, hapticError } from '../utils/haptics';
 
 const schema = z.object({
+  type: z.enum(['subscription', 'bill']),
   name: z.string().min(1, 'Name is required').max(100),
   provider: z.string().min(1, 'Provider is required').max(100),
   category: z.enum(['Health', 'Transport', 'Entertainment', 'Utilities', 'Insurance', 'Education', 'Finance', 'Food', 'Shopping', 'Technology', 'Communication', 'Other']),
   country: z.enum(['Germany', 'India']),
-  amount: z.number().min(0.01, 'Amount must be greater than 0'),
+  amount: z.number().min(0, 'Amount must be 0 or greater'),
   currency: z.enum(['EUR', 'INR', 'USD', 'GBP']),
   billingCycle: z.enum(['Monthly', 'Yearly', 'Quarterly', 'Weekly']),
-  nextPaymentDate: z.string().min(1, 'Payment date is required'),
+  nextPaymentDate: z.string(),
   paymentMethod: z.enum(['Bank Transfer', 'Direct Debit', 'Credit Card', 'UPI', 'Google Pay', 'PhonePe', 'Auto Debit', 'Cash', 'Other']),
   accountUsed: z.string().min(1, 'Account is required').max(100),
   status: z.enum(['Active', 'Paused', 'Cancelled']),
+  autopay: z.boolean().optional(),
+  linkedTo: z.string().max(200).optional(),
   notes: z.string().max(500),
 });
 
 type FormValues = z.infer<typeof schema>;
 
-interface SubscriptionFormProps {
+interface PaymentFormProps {
   isOpen: boolean;
   onClose: () => void;
-  editingSubscription?: Subscription | null;
+  editingItem?: PaymentItem | null;
 }
 
 interface FormFieldProps {
@@ -56,11 +60,25 @@ const inputClass =
 const selectClass =
   'w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors appearance-none cursor-pointer';
 
-export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
-  isOpen,
-  onClose,
-  editingSubscription,
-}) => {
+const getDefaults = (type: 'subscription' | 'bill'): FormValues => ({
+  type,
+  name: '',
+  provider: '',
+  category: type === 'bill' ? 'Utilities' : 'Other',
+  country: type === 'bill' ? 'India' : 'Germany',
+  amount: 0,
+  currency: type === 'bill' ? 'INR' : 'EUR',
+  billingCycle: 'Monthly',
+  nextPaymentDate: type === 'subscription' ? new Date().toISOString().split('T')[0] : '',
+  paymentMethod: type === 'bill' ? 'Google Pay' : 'Bank Transfer',
+  accountUsed: '',
+  status: 'Active',
+  autopay: false,
+  linkedTo: '',
+  notes: '',
+});
+
+export const PaymentForm: React.FC<PaymentFormProps> = ({ isOpen, onClose, editingItem }) => {
   const { user } = useAuthStore();
   const { addToast } = useToastStore();
 
@@ -69,71 +87,95 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
     handleSubmit,
     reset,
     control,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema) as Resolver<FormValues>,
-    defaultValues: {
-      name: '',
-      provider: '',
-      category: 'Other',
-      country: 'Germany',
-      amount: 0,
-      currency: 'EUR',
-      billingCycle: 'Monthly',
-      nextPaymentDate: new Date().toISOString().split('T')[0],
-      paymentMethod: 'Bank Transfer',
-      accountUsed: '',
-      status: 'Active',
-      notes: '',
-    },
+    defaultValues: getDefaults('subscription'),
   });
 
+  const selectedType = watch('type');
+  const isBill = selectedType === 'bill';
+
   useEffect(() => {
-    if (editingSubscription) {
+    if (editingItem) {
       reset({
-        name: editingSubscription.name,
-        provider: editingSubscription.provider,
-        category: editingSubscription.category,
-        country: editingSubscription.country,
-        amount: editingSubscription.amount,
-        currency: editingSubscription.currency,
-        billingCycle: editingSubscription.billingCycle,
-        nextPaymentDate: editingSubscription.nextPaymentDate,
-        paymentMethod: editingSubscription.paymentMethod,
-        accountUsed: editingSubscription.accountUsed,
-        status: editingSubscription.status,
-        notes: editingSubscription.notes ?? '',
+        type: editingItem.type,
+        name: editingItem.name,
+        provider: editingItem.provider,
+        category: editingItem.category,
+        country: editingItem.country,
+        amount: editingItem.amount,
+        currency: editingItem.currency,
+        billingCycle: editingItem.billingCycle,
+        nextPaymentDate: editingItem.nextPaymentDate ?? '',
+        paymentMethod: editingItem.paymentMethod,
+        accountUsed: editingItem.accountUsed,
+        status: editingItem.status,
+        autopay: editingItem.autopay ?? false,
+        linkedTo: editingItem.linkedTo ?? '',
+        notes: editingItem.notes ?? '',
       });
     } else {
-      reset({
-        name: '',
-        provider: '',
-        category: 'Other',
-        country: 'Germany',
-        amount: 0,
-        currency: 'EUR',
-        billingCycle: 'Monthly',
-        nextPaymentDate: new Date().toISOString().split('T')[0],
-        paymentMethod: 'Bank Transfer',
-        accountUsed: '',
-        status: 'Active',
-        notes: '',
-      });
+      reset(getDefaults('subscription'));
     }
-  }, [editingSubscription, reset, isOpen]);
+  }, [editingItem, reset, isOpen]);
 
   const onSubmit = async (data: FormValues) => {
     if (!user) return;
     try {
-      const formData: SubscriptionFormData = { ...data };
-      if (editingSubscription) {
-        await updateSubscription(user.uid, editingSubscription.id, formData);
-        await hapticSuccess();
-        addToast('Subscription updated successfully', 'success');
+      if (data.type === 'subscription') {
+        const formData = {
+          name: data.name,
+          provider: data.provider,
+          category: data.category,
+          country: data.country,
+          amount: data.amount,
+          currency: data.currency,
+          billingCycle: data.billingCycle,
+          nextPaymentDate: data.nextPaymentDate,
+          paymentMethod: data.paymentMethod,
+          accountUsed: data.accountUsed,
+          status: data.status === 'Paused' ? 'Paused' as const : data.status === 'Cancelled' ? 'Cancelled' as const : 'Active' as const,
+          notes: data.notes,
+        };
+        if (editingItem) {
+          await updateSubscription(user.uid, editingItem.id, formData);
+          await hapticSuccess();
+          addToast('Subscription updated successfully', 'success');
+        } else {
+          await addSubscription(user.uid, formData);
+          await hapticSuccess();
+          addToast('Subscription added successfully', 'success');
+        }
       } else {
-        await addSubscription(user.uid, formData);
-        await hapticSuccess();
-        addToast('Subscription added successfully', 'success');
+        const formData = {
+          name: data.name,
+          provider: data.provider,
+          category: data.category,
+          country: data.country,
+          amount: data.amount,
+          currency: data.currency,
+          billingCycle: data.billingCycle,
+          dueDate: data.nextPaymentDate,
+          paymentMethod: data.paymentMethod,
+          accountUsed: data.accountUsed,
+          // Map Paused back to Inactive for Firestore compatibility
+          status: data.status === 'Active' ? 'Active' as const : 'Inactive' as const,
+          autopay: data.autopay ?? false,
+          linkedTo: data.linkedTo ?? '',
+          notes: data.notes,
+        };
+        if (editingItem) {
+          await updateBill(user.uid, editingItem.id, formData);
+          await hapticSuccess();
+          addToast('Bill updated successfully', 'success');
+        } else {
+          await addBill(user.uid, formData);
+          await hapticSuccess();
+          addToast('Bill added successfully', 'success');
+        }
       }
       onClose();
     } catch {
@@ -143,6 +185,8 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
   };
 
   if (!isOpen) return null;
+
+  const isEditing = !!editingItem;
 
   return (
     <div className="fixed inset-0 z-40 flex items-start justify-center px-4 py-6 overflow-y-auto">
@@ -155,10 +199,12 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
           <div>
             <h2 className="text-lg font-bold text-gray-900">
-              {editingSubscription ? 'Edit Subscription' : 'Add Subscription'}
+              {isEditing
+                ? `Edit ${isBill ? 'Bill' : 'Subscription'}`
+                : 'Add Payment'}
             </h2>
             <p className="text-sm text-gray-500 mt-0.5">
-              {editingSubscription ? 'Update the details below' : 'Fill in the details to track a new subscription'}
+              {isEditing ? 'Update the details below' : 'Track a new subscription or bill'}
             </p>
           </div>
           <button
@@ -171,14 +217,44 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
           </button>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-5">
+          {/* Type toggle — locked when editing */}
+          <div className="mb-5">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+            <div className="flex gap-1 p-1 bg-gray-100 rounded-xl w-fit">
+              <button
+                type="button"
+                disabled={isEditing}
+                onClick={() => setValue('type', 'subscription')}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 disabled:cursor-not-allowed ${
+                  !isBill
+                    ? 'bg-white text-indigo-700 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Subscription
+              </button>
+              <button
+                type="button"
+                disabled={isEditing}
+                onClick={() => setValue('type', 'bill')}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 disabled:cursor-not-allowed ${
+                  isBill
+                    ? 'bg-white text-violet-700 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Bill
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-            <FormField label="Subscription Name" error={errors.name?.message} required>
+            <FormField label={isBill ? 'Bill Name' : 'Subscription Name'} error={errors.name?.message} required>
               <input
                 {...register('name')}
-                placeholder="e.g. Netflix, Health Insurance"
+                placeholder={isBill ? 'e.g. Electricity, Property Tax' : 'e.g. Netflix, Health Insurance'}
                 className={inputClass}
               />
             </FormField>
@@ -193,6 +269,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
                     onChange={field.onChange}
                     onBlur={field.onBlur}
                     error={errors.provider?.message}
+                    placeholder={isBill ? 'e.g. BESCOM, BBMP, LIC' : undefined}
                   />
                 )}
               />
@@ -223,7 +300,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
               </div>
             </FormField>
 
-            <FormField label="Amount" error={errors.amount?.message} required>
+            <FormField label={isBill ? 'Usual Amount' : 'Amount'} error={errors.amount?.message} required>
               <input
                 {...register('amount', { valueAsNumber: true })}
                 type="number"
@@ -262,10 +339,15 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
               </div>
             </FormField>
 
-            <FormField label="Next Payment Date" error={errors.nextPaymentDate?.message} required>
+            <FormField
+              label={isBill ? 'Due Date' : 'Next Payment Date'}
+              error={errors.nextPaymentDate?.message}
+              required={!isBill}
+            >
               <input
                 {...register('nextPaymentDate')}
-                type="date"
+                type={isBill ? 'text' : 'date'}
+                placeholder={isBill ? 'e.g. 15th of every month' : undefined}
                 className={inputClass}
               />
             </FormField>
@@ -292,10 +374,21 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
             <FormField label="Account Used" error={errors.accountUsed?.message} required>
               <input
                 {...register('accountUsed')}
-                placeholder="e.g. N26, HDFC Credit Card"
+                placeholder={isBill ? 'e.g. HDFC Savings, SBI Credit Card' : 'e.g. N26, HDFC Credit Card'}
                 className={inputClass}
               />
             </FormField>
+
+            {/* Bill-only: Linked To */}
+            {isBill && (
+              <FormField label="Linked To" error={errors.linkedTo?.message}>
+                <input
+                  {...register('linkedTo')}
+                  placeholder="e.g. House 1 - Bangalore"
+                  className={inputClass}
+                />
+              </FormField>
+            )}
 
             <FormField label="Status" error={errors.status?.message} required>
               <div className="relative">
@@ -310,10 +403,31 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
               </div>
             </FormField>
 
+            {/* Bill-only: Autopay toggle */}
+            {isBill && (
+              <div className="sm:col-span-2">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative">
+                    <input
+                      {...register('autopay')}
+                      type="checkbox"
+                      className="sr-only peer"
+                    />
+                    <div className="w-10 h-6 bg-gray-200 rounded-full peer-checked:bg-indigo-600 transition-colors" />
+                    <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm peer-checked:translate-x-4 transition-transform" />
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">Autopay enabled</span>
+                    <p className="text-xs text-gray-400">This bill is automatically paid</p>
+                  </div>
+                </label>
+              </div>
+            )}
+
             <FormField label="Notes" error={errors.notes?.message}>
               <textarea
                 {...register('notes')}
-                placeholder="Optional notes about this subscription..."
+                placeholder={`Optional notes about this ${isBill ? 'bill' : 'subscription'}...`}
                 rows={3}
                 className={`${inputClass} resize-none`}
               />
@@ -338,7 +452,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
               {isSubmitting && (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               )}
-              {editingSubscription ? 'Save Changes' : 'Add Subscription'}
+              {isEditing ? 'Save Changes' : `Add ${isBill ? 'Bill' : 'Subscription'}`}
             </button>
           </div>
         </form>

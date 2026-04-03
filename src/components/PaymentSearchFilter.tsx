@@ -1,12 +1,13 @@
 import React from 'react';
-import { useSubscriptionStore } from '../store/useSubscriptionStore';
-import type { SubscriptionFilters } from '../types/subscription';
+import { usePaymentsStore } from '../store/usePaymentsStore';
+import type { PaymentFilters } from '../types/payment';
 
-export const SearchAndFilter: React.FC = () => {
-  const { filters, setFilter, resetFilters } = useSubscriptionStore();
+export const PaymentSearchFilter: React.FC = () => {
+  const { filters, setFilter, resetFilters } = usePaymentsStore();
 
   const hasActiveFilters =
     filters.search !== '' ||
+    filters.type !== 'All' ||
     filters.category !== 'All' ||
     filters.status !== 'All' ||
     filters.billingCycle !== 'All';
@@ -30,7 +31,7 @@ export const SearchAndFilter: React.FC = () => {
           type="text"
           value={filters.search}
           onChange={(e) => setFilter('search', e.target.value)}
-          placeholder="Search subscriptions..."
+          placeholder="Search payments..."
           className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors"
         />
         {filters.search && (
@@ -45,11 +46,27 @@ export const SearchAndFilter: React.FC = () => {
         )}
       </div>
 
+      {/* Type filter */}
+      <div className="relative">
+        <select
+          value={filters.type}
+          onChange={(e) => setFilter('type', e.target.value as PaymentFilters['type'])}
+          className={selectClass}
+        >
+          <option value="All">All Types</option>
+          <option value="subscription">Subscriptions</option>
+          <option value="bill">Bills</option>
+        </select>
+        <svg className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+
       {/* Category filter */}
       <div className="relative">
         <select
           value={filters.category}
-          onChange={(e) => setFilter('category', e.target.value as SubscriptionFilters['category'])}
+          onChange={(e) => setFilter('category', e.target.value as PaymentFilters['category'])}
           className={selectClass}
         >
           <option value="All">All Categories</option>
@@ -66,7 +83,7 @@ export const SearchAndFilter: React.FC = () => {
       <div className="relative">
         <select
           value={filters.status}
-          onChange={(e) => setFilter('status', e.target.value as SubscriptionFilters['status'])}
+          onChange={(e) => setFilter('status', e.target.value as PaymentFilters['status'])}
           className={selectClass}
         >
           <option value="All">All Status</option>
@@ -83,7 +100,7 @@ export const SearchAndFilter: React.FC = () => {
       <div className="relative">
         <select
           value={filters.billingCycle}
-          onChange={(e) => setFilter('billingCycle', e.target.value as SubscriptionFilters['billingCycle'])}
+          onChange={(e) => setFilter('billingCycle', e.target.value as PaymentFilters['billingCycle'])}
           className={selectClass}
         >
           <option value="All">All Cycles</option>

@@ -1,14 +1,14 @@
 import React from 'react';
-import type { Subscription, Country, Currency } from '../types/subscription';
+import type { PaymentItem, Country, Currency } from '../types/payment';
 import { formatCurrency, getMonthlyAmount } from '../utils/formatters';
 
-interface SummaryBarProps {
-  subscriptions: Subscription[];
+interface PaymentSummaryBarProps {
+  items: PaymentItem[];
   country: Country;
 }
 
-export const SummaryBar: React.FC<SummaryBarProps> = ({ subscriptions, country }) => {
-  const active = subscriptions.filter((s) => s.status === 'Active');
+export const PaymentSummaryBar: React.FC<PaymentSummaryBarProps> = ({ items, country }) => {
+  const active = items.filter((i) => i.status === 'Active');
 
   const primaryCurrency: Record<Country, Currency> = {
     Germany: 'EUR',
@@ -18,23 +18,18 @@ export const SummaryBar: React.FC<SummaryBarProps> = ({ subscriptions, country }
   const currency = primaryCurrency[country];
 
   const monthlyTotal = active
-    .filter((s) => s.currency === currency)
-    .reduce((sum, s) => sum + getMonthlyAmount(s.amount, s.billingCycle), 0);
+    .filter((i) => i.currency === currency)
+    .reduce((sum, i) => sum + getMonthlyAmount(i.amount, i.billingCycle), 0);
 
   const yearlyTotal = monthlyTotal * 12;
 
-  const upcomingCount = active.filter((s) => {
-    const days = Math.ceil(
-      (new Date(s.nextPaymentDate + 'T00:00:00').getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-    );
-    return days >= 0 && days <= 7;
-  }).length;
+  const autopayCount = active.filter((i) => i.type === 'bill' && i.autopay).length;
 
   const stats = [
     {
       label: 'Active',
       value: active.length,
-      sub: `of ${subscriptions.length} total`,
+      sub: `of ${items.length} total`,
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -68,16 +63,16 @@ export const SummaryBar: React.FC<SummaryBarProps> = ({ subscriptions, country }
       bg: 'bg-purple-50',
     },
     {
-      label: 'Due Soon',
-      value: upcomingCount,
-      sub: 'within 7 days',
+      label: 'Autopay',
+      value: autopayCount,
+      sub: 'bills on autopay',
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
       ),
-      color: upcomingCount > 0 ? 'text-amber-600' : 'text-gray-400',
-      bg: upcomingCount > 0 ? 'bg-amber-50' : 'bg-gray-50',
+      color: autopayCount > 0 ? 'text-blue-600' : 'text-gray-400',
+      bg: autopayCount > 0 ? 'bg-blue-50' : 'bg-gray-50',
     },
   ];
 

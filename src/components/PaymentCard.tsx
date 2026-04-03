@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
-import type { Subscription } from '../types/subscription';
+import type { PaymentItem } from '../types/payment';
 import { PROVIDERS } from '../data/providers';
+import { formatCurrency, formatDate, getDaysUntilPayment } from '../utils/formatters';
+import { getCategoryConfig } from '../utils/categoryColors';
+import { ConfirmDialog } from './ConfirmDialog';
+import { deleteSubscription } from '../services/subscriptionService';
+import { deleteBill } from '../services/billsService';
+import { useAuthStore } from '../store/useAuthStore';
+import { useToastStore } from '../store/useToastStore';
+import { hapticHeavy, hapticSuccess, hapticError } from '../utils/haptics';
 
 function getProviderLogoUrl(providerName: string): string | null {
   if (!providerName) return null;
@@ -16,15 +24,11 @@ function getProviderLogoUrl(providerName: string): string | null {
 const ProviderIcon: React.FC<{ provider: string; fallback: React.ReactNode; bg: string }> = ({
   provider,
   fallback,
-  bg,
+  bg: _bg,
 }) => {
   const [imgError, setImgError] = useState(false);
   const logoUrl = getProviderLogoUrl(provider);
-
-  if (!logoUrl || imgError) {
-    return <span className="text-lg">{fallback}</span>;
-  }
-
+  if (!logoUrl || imgError) return <span className="text-lg">{fallback}</span>;
   return (
     <img
       src={logoUrl}
@@ -34,42 +38,35 @@ const ProviderIcon: React.FC<{ provider: string; fallback: React.ReactNode; bg: 
     />
   );
 };
-import { formatCurrency, formatDate, getDaysUntilPayment } from '../utils/formatters';
-import { getCategoryConfig } from '../utils/categoryColors';
-import { ConfirmDialog } from './ConfirmDialog';
-import { deleteSubscription } from '../services/subscriptionService';
-import { useAuthStore } from '../store/useAuthStore';
-import { useToastStore } from '../store/useToastStore';
-import { hapticHeavy, hapticSuccess, hapticError } from '../utils/haptics';
 
-interface SubscriptionCardProps {
-  subscription: Subscription;
-  onEdit: (subscription: Subscription) => void;
+interface PaymentCardProps {
+  item: PaymentItem;
+  onEdit: (item: PaymentItem) => void;
 }
 
-const statusStyles: Record<Subscription['status'], string> = {
+const statusStyles: Record<PaymentItem['status'], string> = {
   Active: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   Paused: 'bg-amber-50 text-amber-700 border-amber-200',
   Cancelled: 'bg-gray-100 text-gray-500 border-gray-200',
 };
 
-const statusDots: Record<Subscription['status'], string> = {
+const statusDots: Record<PaymentItem['status'], string> = {
   Active: 'bg-emerald-500',
   Paused: 'bg-amber-500',
   Cancelled: 'bg-gray-400',
 };
 
-export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ subscription, onEdit }) => {
+export const PaymentCard: React.FC<PaymentCardProps> = ({ item, onEdit }) => {
   const { user } = useAuthStore();
   const { addToast } = useToastStore();
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const config = getCategoryConfig(subscription.category);
-  const daysUntil = getDaysUntilPayment(subscription.nextPaymentDate);
+  const config = getCategoryConfig(item.category);
+  const daysUntil = getDaysUntilPayment(item.nextPaymentDate);
 
   const urgency =
-    subscription.status === 'Active'
+    item.status === 'Active'
       ? daysUntil <= 3
         ? 'urgent'
         : daysUntil <= 7
@@ -81,23 +78,29 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ subscription
     if (!user) return;
     setDeleting(true);
     try {
-      await deleteSubscription(user.uid, subscription.id);
+      if (item.type === 'subscription') {
+        await deleteSubscription(user.uid, item.id);
+      } else {
+        await deleteBill(user.uid, item.id);
+      }
       await hapticSuccess();
-      addToast(`"${subscription.name}" deleted`, 'success');
+      addToast(`"${item.name}" deleted`, 'success');
       setShowConfirm(false);
     } catch {
       await hapticError();
-      addToast('Failed to delete subscription', 'error');
+      addToast(`Failed to delete ${item.type}`, 'error');
     } finally {
       setDeleting(false);
     }
   };
 
-  // Haptic on delete button tap (before confirm dialog opens)
   const handleDeletePress = async () => {
     await hapticHeavy();
     setShowConfirm(true);
   };
+
+  const isBill = item.type === 'bill';
+  const isInactive = item.status === 'Cancelled';
 
   return (
     <>
@@ -106,11 +109,11 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ subscription
           group relative bg-white rounded-2xl border transition-all duration-200
           hover:shadow-md hover:-translate-y-0.5
           ${urgency === 'urgent' ? 'border-red-200 shadow-sm' : urgency === 'soon' ? 'border-amber-200 shadow-sm' : 'border-gray-100 shadow-sm'}
-          ${subscription.status === 'Cancelled' ? 'opacity-60' : ''}
+          ${isInactive ? 'opacity-60' : ''}
         `}
       >
         {/* Urgency indicator bar */}
-        {urgency !== 'normal' && subscription.status === 'Active' && (
+        {urgency !== 'normal' && item.status === 'Active' && (
           <div
             className={`absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl ${
               urgency === 'urgent' ? 'bg-red-400' : 'bg-amber-400'
@@ -125,20 +128,16 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ subscription
               <div
                 className={`w-10 h-10 rounded-xl ${config.bg} flex items-center justify-center shrink-0`}
               >
-                <ProviderIcon
-                  provider={subscription.provider}
-                  fallback={config.icon}
-                  bg={config.bg}
-                />
+                <ProviderIcon provider={item.provider} fallback={config.icon} bg={config.bg} />
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-gray-900 truncate">{subscription.name}</h3>
-                <p className="text-sm text-gray-500 truncate">{subscription.provider}</p>
+                <h3 className="font-semibold text-gray-900 truncate">{item.name}</h3>
+                <p className="text-sm text-gray-500 truncate">{item.provider}</p>
               </div>
             </div>
             <div className="flex items-center gap-1 shrink-0">
               <button
-                onClick={() => onEdit(subscription)}
+                onClick={() => onEdit(item)}
                 className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors opacity-60 hover:opacity-100"
                 title="Edit"
               >
@@ -162,11 +161,21 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ subscription
           <div className="mb-4">
             <div className="flex items-baseline gap-1.5">
               <span className="text-2xl font-bold text-gray-900">
-                {formatCurrency(subscription.amount, subscription.currency)}
+                {formatCurrency(item.amount, item.currency)}
               </span>
-              <span className="text-sm text-gray-400 font-medium">/{subscription.billingCycle.toLowerCase()}</span>
+              <span className="text-sm text-gray-400 font-medium">/{item.billingCycle.toLowerCase()}</span>
             </div>
           </div>
+
+          {/* Linked To (bills only) */}
+          {isBill && item.linkedTo && (
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-3 px-2 py-1.5 bg-gray-50 rounded-lg">
+              <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span className="truncate font-medium">{item.linkedTo}</span>
+            </div>
+          )}
 
           {/* Meta info */}
           <div className="grid grid-cols-2 gap-2 mb-4">
@@ -174,40 +183,63 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ subscription
               <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
-              <span className="truncate">{subscription.paymentMethod}</span>
+              <span className="truncate">{item.paymentMethod}</span>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-gray-500 col-span-2">
-              <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <span>{formatDate(subscription.nextPaymentDate)}</span>
-            </div>
+            {item.nextPaymentDate && (
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 col-span-2">
+                <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>{isBill ? 'Due: ' : ''}{formatDate(item.nextPaymentDate)}</span>
+              </div>
+            )}
           </div>
 
           {/* Footer */}
           <div className="flex items-center justify-between pt-3 border-t border-gray-50">
-            <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${statusStyles[subscription.status]}`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${statusDots[subscription.status]}`} />
-              {subscription.status}
-            </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${statusStyles[item.status]}`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${statusDots[item.status]}`} />
+                {item.status}
+              </span>
+              {/* Type badge */}
+              <span
+                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
+                  isBill
+                    ? 'bg-violet-50 text-violet-700 border-violet-200'
+                    : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                }`}
+              >
+                {isBill ? 'Bill' : 'Subscription'}
+              </span>
+              {/* Autopay badge (bills only) */}
+              {isBill && item.autopay && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Auto
+                </span>
+              )}
+            </div>
             <span className={`text-xs font-medium px-2 py-1 rounded-lg ${config.bg} ${config.color}`}>
-              {subscription.category}
+              {item.category}
             </span>
           </div>
 
           {/* Notes */}
-          {subscription.notes && (
-            <p className="mt-3 text-xs text-gray-400 italic truncate">{subscription.notes}</p>
+          {item.notes && (
+            <p className="mt-3 text-xs text-gray-400 italic truncate">{item.notes}</p>
           )}
         </div>
       </div>
 
       <ConfirmDialog
         isOpen={showConfirm}
-        title="Delete Subscription"
-        message={`Are you sure you want to delete "${subscription.name}"? This action cannot be undone.`}
+        title={`Delete ${isBill ? 'Bill' : 'Subscription'}`}
+        message={`Are you sure you want to delete "${item.name}"? This action cannot be undone.`}
         onConfirm={handleDelete}
         onCancel={() => setShowConfirm(false)}
         loading={deleting}

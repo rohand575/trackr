@@ -18,6 +18,7 @@ export const formatCurrency = (amount: number, currency: Currency): string => {
 export const formatDate = (dateStr: string): string => {
   if (!dateStr) return '';
   const date = new Date(dateStr + 'T00:00:00');
+  if (isNaN(date.getTime())) return dateStr; // non-ISO value (e.g. "15th of every month") — show as-is
   return new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',
     month: 'short',
@@ -26,10 +27,11 @@ export const formatDate = (dateStr: string): string => {
 };
 
 export const getDaysUntilPayment = (dateStr: string): number => {
-  if (!dateStr) return 0;
+  if (!dateStr) return Infinity;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const paymentDate = new Date(dateStr + 'T00:00:00');
+  if (isNaN(paymentDate.getTime())) return Infinity; // non-ISO value — treat as no upcoming date
   paymentDate.setHours(0, 0, 0, 0);
   const diff = paymentDate.getTime() - today.getTime();
   return Math.ceil(diff / (1000 * 60 * 60 * 24));

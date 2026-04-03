@@ -15,7 +15,7 @@ import { QuickCapture } from './components/QuickCapture';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { useAuth } from './hooks/useAuth';
 import { useBiometric } from './hooks/useBiometric';
-import { useSubscriptionStore } from './store/useSubscriptionStore';
+import { usePaymentsStore } from './store/usePaymentsStore';
 import {
   createRenewalChannel,
   requestNotificationPermission,
@@ -56,7 +56,8 @@ const DeepLinkHandler: React.FC = () => {
 // then reschedule whenever the subscription list changes.
 // ---------------------------------------------------------------------------
 const NotificationManager: React.FC = () => {
-  const { subscriptions } = useSubscriptionStore();
+  const { payments } = usePaymentsStore();
+  const subscriptions = payments.filter((p) => p.type === 'subscription');
 
   useEffect(() => {
     // One-time setup: create Android channel + ask for permission
@@ -66,7 +67,8 @@ const NotificationManager: React.FC = () => {
 
   useEffect(() => {
     if (subscriptions.length > 0) {
-      scheduleRenewalNotifications(subscriptions);
+      // PaymentItem (type='subscription') has all fields scheduleRenewalNotifications needs
+      scheduleRenewalNotifications(subscriptions as unknown as Parameters<typeof scheduleRenewalNotifications>[0]);
     }
   }, [subscriptions]);
 
