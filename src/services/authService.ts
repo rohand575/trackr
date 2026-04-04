@@ -6,6 +6,7 @@ import {
   type User,
 } from 'firebase/auth';
 import { auth } from './firebase';
+import { clearWidgetData } from './widgetSyncService';
 
 export const registerUser = async (email: string, password: string): Promise<User> => {
   const credential = await createUserWithEmailAndPassword(auth, email, password);
@@ -18,6 +19,7 @@ export const loginUser = async (email: string, password: string): Promise<User> 
 };
 
 export const logoutUser = async (): Promise<void> => {
+  await clearWidgetData();
   await signOut(auth);
 };
 
