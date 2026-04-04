@@ -14,7 +14,8 @@
     "cap:run:android": "npx cap run android",
     "cap:open:ios": "npx cap open ios",
     "cap:run:ios": "npx cap run ios",
-    "cap:assets": "npx capacitor-assets generate"
+    "cap:assets": "npx capacitor-assets generate",
+    "postinstall": "node scripts/patch-biometric-spm.js"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.0",
