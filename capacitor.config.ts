@@ -6,8 +6,9 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     // Required so cookies, service workers, and other secure-context APIs
-    // work correctly inside the Android WebView.
+    // work correctly inside the native WebViews.
     androidScheme: 'https',
+    iosScheme: 'https',
   },
   plugins: {
     // Local notifications channel config — applied at build time by cap sync.

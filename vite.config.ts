@@ -4,16 +4,16 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig(({ mode }) => {
-  // Capacitor native builds don't need a service worker — it breaks WKWebView
+  // Capacitor native builds must NOT include any service worker — it causes
+  // an infinite reload loop inside WKWebView on iOS.
   const isCapacitor = mode === 'capacitor';
 
   return {
     plugins: [
       tailwindcss(),
       react(),
-      VitePWA({
-        // In Capacitor mode, generate a self-destroying SW to clear any old registration
-        selfDestroying: isCapacitor,
+      // Completely skip the PWA plugin for native builds
+      ...(!isCapacitor ? [VitePWA({
         registerType: 'autoUpdate',
         includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon-180x180.png', 'pwa-192x192.png', 'pwa-512x512.png', 'maskable-icon-512x512.png'],
         manifest: {
@@ -57,7 +57,7 @@ export default defineConfig(({ mode }) => {
             },
           ],
         },
-      }),
+      })] : []),
     ],
   };
 });

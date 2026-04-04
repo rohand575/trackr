@@ -3,7 +3,7 @@ import { useForm, Controller, type Resolver } from 'react-hook-form';
 import { ProviderCombobox } from './ProviderCombobox';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { PaymentItem, PaymentFormData } from '../types/payment';
+import type { PaymentItem } from '../types/payment';
 import { addSubscription, updateSubscription } from '../services/subscriptionService';
 import { addBill, updateBill } from '../services/billsService';
 import { useAuthStore } from '../store/useAuthStore';
