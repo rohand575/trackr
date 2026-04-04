@@ -1,19 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { useForm, type Resolver } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import React, { useEffect, useState, useRef } from 'react';
 import type { Idea, IdeaFormData, IdeaColor, ChecklistItem } from '../../types/ideas';
 import { addIdea, updateIdea } from '../../services/ideasService';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useToastStore } from '../../store/useToastStore';
-import { IdeaColorPicker } from './IdeaColorPicker';
-
-const schema = z.object({
-  title: z.string().min(1, 'Title is required').max(200),
-  body: z.string().max(2000),
-});
-
-type FormValues = z.infer<typeof schema>;
+import { IdeaColorPicker, IDEA_COLOR_MAP, IDEA_BORDER_MAP } from './IdeaColorPicker';
 
 interface IdeaFormProps {
   isOpen: boolean;
@@ -21,50 +11,51 @@ interface IdeaFormProps {
   editingIdea?: Idea | null;
 }
 
-const inputClass = 'w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors';
-
 export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea }) => {
   const { user } = useAuthStore();
   const { addToast } = useToastStore();
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
   const [color, setColor] = useState<IdeaColor>('default');
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
   const [newItemText, setNewItemText] = useState('');
-
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormValues>({
-    resolver: zodResolver(schema) as Resolver<FormValues>,
-    defaultValues: { title: '', body: '' },
-  });
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const titleRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
     if (editingIdea) {
-      reset({ title: editingIdea.title, body: editingIdea.body });
+      setTitle(editingIdea.title);
+      setBody(editingIdea.body);
       setColor(editingIdea.color);
       setChecklist(editingIdea.checklist);
     } else {
-      reset({ title: '', body: '' });
+      setTitle('');
+      setBody('');
       setColor('default');
       setChecklist([]);
     }
     setNewItemText('');
-  }, [editingIdea, isOpen, reset]);
+    setShowColorPicker(false);
+    setTimeout(() => titleRef.current?.focus(), 50);
+  }, [editingIdea, isOpen]);
 
-  const addChecklistItem = () => {
-    const text = newItemText.trim();
-    if (!text) return;
-    setChecklist((prev) => [...prev, { id: crypto.randomUUID(), text, checked: false }]);
-    setNewItemText('');
-  };
-
-  const removeChecklistItem = (id: string) => {
-    setChecklist((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const onSubmit = async (data: FormValues) => {
-    if (!user) return;
+  const handleSave = async () => {
+    if (!user || saving) return;
+    if (!title.trim() && !editingIdea) {
+      onClose();
+      return;
+    }
+    if (!title.trim()) {
+      addToast('Title is required', 'error');
+      return;
+    }
+    setSaving(true);
     try {
       const formData: IdeaFormData = {
-        ...data,
+        title: title.trim(),
+        body: body.trim(),
         color,
         pinned: editingIdea?.pinned ?? false,
         checklist,
@@ -80,100 +71,160 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
       onClose();
     } catch {
       addToast('Something went wrong', 'error');
+    } finally {
+      setSaving(false);
     }
+  };
+
+  const addChecklistItem = () => {
+    const text = newItemText.trim();
+    if (!text) return;
+    setChecklist((prev) => [...prev, { id: crypto.randomUUID(), text, checked: false }]);
+    setNewItemText('');
+  };
+
+  const removeChecklistItem = (id: string) => {
+    setChecklist((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const toggleChecklistItem = (id: string) => {
+    setChecklist((prev) =>
+      prev.map((item) => item.id === id ? { ...item, checked: !item.checked } : item)
+    );
   };
 
   if (!isOpen) return null;
 
+  const bgColor = IDEA_COLOR_MAP[color];
+  const borderColor = IDEA_BORDER_MAP[color];
+
   return (
-    <div className="fixed inset-0 z-40 flex items-start justify-center px-4 py-6 overflow-y-auto">
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl animate-scale-in mt-4 mb-4">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-          <div>
-            <h2 className="text-lg font-bold text-gray-900">{editingIdea ? 'Edit Idea' : 'New Idea'}</h2>
-            <p className="text-sm text-gray-500 mt-0.5">Capture your thought before it fades</p>
-          </div>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div className="fixed inset-0 z-40 flex items-center justify-center p-[5vw]">
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={handleSave} />
+      <div
+        className={`relative w-[90vw] h-[80vh] max-w-4xl ${bgColor} border ${borderColor} rounded-2xl shadow-2xl animate-scale-in flex flex-col`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="absolute top-3 right-3 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-black/5 rounded-lg transition-colors z-10"
+          title="Close"
+        >
+          {saving ? (
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+          ) : (
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
-        </div>
+          )}
+        </button>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-5 space-y-4">
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto p-6 pt-5 flex flex-col min-h-0">
           {/* Title */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Title <span className="text-red-500">*</span></label>
-            <input {...register('title')} placeholder="What's the idea?" className={inputClass} autoFocus />
-            {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title.message}</p>}
-          </div>
+          <input
+            ref={titleRef}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Escape') handleSave(); }}
+            placeholder="Title"
+            className="w-full bg-transparent text-base font-semibold text-gray-900 placeholder:text-gray-400 focus:outline-none pr-8"
+          />
 
-          {/* Body */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
-            <textarea {...register('body')} rows={3} placeholder="Add more details..." className={`${inputClass} resize-none`} />
-          </div>
+          {/* Body — grows to fill space */}
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder="Take a note..."
+            className="w-full flex-1 bg-transparent text-sm text-gray-600 placeholder:text-gray-400 focus:outline-none resize-none mt-3 leading-relaxed"
+          />
 
-          {/* Color picker */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Card Color</label>
-            <IdeaColorPicker value={color} onChange={setColor} />
-          </div>
-
-          {/* Checklist builder */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Checklist</label>
-            {checklist.length > 0 && (
-              <div className="space-y-2 mb-3">
-                {checklist.map((item) => (
-                  <div key={item.id} className="flex items-center gap-2 group/item">
-                    <svg className="w-3.5 h-3.5 text-gray-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          {/* Checklist items */}
+          {checklist.length > 0 && (
+            <div className="space-y-2 mt-3 border-t border-gray-100/60 pt-3">
+              {checklist.map((item) => (
+                <div key={item.id} className="flex items-start gap-2 group/item">
+                  <input
+                    type="checkbox"
+                    checked={item.checked}
+                    onChange={() => toggleChecklistItem(item.id)}
+                    className="mt-0.5 w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500/30 cursor-pointer shrink-0"
+                  />
+                  <span
+                    className={`text-sm flex-1 break-words leading-snug ${item.checked ? 'text-gray-400 line-through' : 'text-gray-700'}`}
+                  >
+                    {item.text}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeChecklistItem(item.id)}
+                    className="p-0.5 text-gray-300 hover:text-red-500 rounded transition-colors opacity-0 group-hover/item:opacity-100 shrink-0"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    <span className="text-sm text-gray-700 flex-1 truncate">{item.text}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeChecklistItem(item.id)}
-                      className="p-1 text-gray-300 hover:text-red-500 rounded transition-colors opacity-0 group-hover/item:opacity-100"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            <div className="flex gap-2">
-              <input
-                value={newItemText}
-                onChange={(e) => setNewItemText(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addChecklistItem(); } }}
-                placeholder="Add an item..."
-                className={`${inputClass} flex-1`}
-              />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add checklist item */}
+          <div className="flex items-center gap-2 mt-3">
+            <svg className="w-4 h-4 text-gray-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            <input
+              value={newItemText}
+              onChange={(e) => setNewItemText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addChecklistItem(); } }}
+              placeholder="List item"
+              className="flex-1 bg-transparent text-sm text-gray-600 placeholder:text-gray-400 focus:outline-none"
+            />
+            {newItemText.trim() && (
               <button
                 type="button"
                 onClick={addChecklistItem}
-                disabled={!newItemText.trim()}
-                className="px-3 py-2.5 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="text-sm text-indigo-600 font-medium px-1 hover:text-indigo-800 transition-colors"
               >
                 Add
               </button>
-            </div>
+            )}
           </div>
+        </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-4 border-t border-gray-100">
-            <button type="button" onClick={onClose} disabled={isSubmitting} className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50">Cancel</button>
-            <button type="submit" disabled={isSubmitting} className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm shadow-indigo-200">
-              {isSubmitting && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-              {editingIdea ? 'Save Changes' : 'Save Idea'}
-            </button>
+        {/* Color picker panel — sits above footer */}
+        {showColorPicker && (
+          <div className="px-6 pb-2 border-t border-gray-100/60 pt-3">
+            <IdeaColorPicker
+              value={color}
+              onChange={(c) => { setColor(c); setShowColorPicker(false); }}
+              size="sm"
+            />
           </div>
-        </form>
+        )}
+
+        {/* Footer toolbar — pinned to bottom */}
+        <div className="flex items-center justify-between px-6 py-3 border-t border-gray-100/60 shrink-0">
+          <button
+            onClick={() => setShowColorPicker(!showColorPicker)}
+            className={`p-2 rounded-lg transition-colors ${showColorPicker ? 'text-indigo-600 bg-indigo-50' : 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
+            title="Change color"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+            </svg>
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-black/5 rounded-lg transition-colors disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Close'}
+          </button>
+        </div>
       </div>
     </div>
   );

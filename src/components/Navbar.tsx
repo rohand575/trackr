@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { logoutUser } from '../services/authService';
 import { useToastStore } from '../store/useToastStore';
@@ -38,7 +38,7 @@ export const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center gap-2">
+          <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center shadow-md">
               <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
@@ -47,7 +47,7 @@ export const Navbar: React.FC = () => {
             <span className="text-lg font-bold text-gray-900 tracking-tight">
               Track<span className="text-indigo-600">r</span>
             </span>
-          </div>
+          </Link>
 
           {/* Desktop navigation */}
           <nav className="hidden md:flex items-center gap-1">

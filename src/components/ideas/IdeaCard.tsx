@@ -79,7 +79,8 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onEdit }) => {
   return (
     <>
       <div
-        className={`group ${bgColor} rounded-2xl border ${borderColor} shadow-sm hover:shadow-md transition-all duration-200 break-inside-avoid mb-4 ${
+        onClick={() => onEdit(idea)}
+        className={`group ${bgColor} rounded-2xl border ${borderColor} shadow-sm hover:shadow-md transition-all duration-200 break-inside-avoid mb-4 cursor-pointer ${
           idea.isArchived ? 'opacity-60' : ''
         }`}
       >
@@ -90,7 +91,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onEdit }) => {
               {idea.title}
             </h3>
             <button
-              onClick={handleTogglePin}
+              onClick={(e) => { e.stopPropagation(); handleTogglePin(); }}
               className={`p-1 rounded-lg transition-all duration-150 shrink-0 ${
                 idea.pinned
                   ? 'text-indigo-600'
@@ -117,6 +118,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onEdit }) => {
               {idea.checklist.map((item) => (
                 <label
                   key={item.id}
+                  onClick={(e) => e.stopPropagation()}
                   className="flex items-start gap-2 cursor-pointer group/check"
                 >
                   <input
@@ -144,13 +146,16 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onEdit }) => {
 
           {/* Inline color picker (toggled) */}
           {showColorPicker && (
-            <div className="mt-3 pt-3 border-t border-gray-100/60">
+            <div onClick={(e) => e.stopPropagation()} className="mt-3 pt-3 border-t border-gray-100/60">
               <IdeaColorPicker value={idea.color} onChange={handleColorChange} size="sm" />
             </div>
           )}
 
           {/* Footer actions */}
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100/60">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100/60"
+          >
             <div className="flex items-center gap-0.5">
               {/* Color picker toggle */}
               <button
@@ -160,16 +165,6 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onEdit }) => {
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                </svg>
-              </button>
-              {/* Edit */}
-              <button
-                onClick={() => onEdit(idea)}
-                className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                title="Edit"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
               </button>
               {/* Archive / Restore */}
