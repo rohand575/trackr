@@ -3,8 +3,11 @@
  * The published npm package only ships a .podspec (CocoaPods) — this shim adds SPM support.
  * Run automatically via the "postinstall" npm script.
  */
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const dest = path.join(__dirname, '..', 'node_modules', 'capacitor-native-biometric', 'Package.swift');
 
