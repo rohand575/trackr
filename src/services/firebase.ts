@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { initializeAuth, indexedDBLocalPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -13,7 +13,12 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-export const auth = getAuth(app);
+// Use IndexedDB persistence so auth state survives in iOS WKWebView.
+// The default localStorage-based persistence is unreliable in Capacitor's
+// WKWebView and causes onAuthStateChanged to never fire on iOS.
+export const auth = initializeAuth(app, {
+  persistence: indexedDBLocalPersistence,
+});
 export const db = getFirestore(app);
 
 export default app;

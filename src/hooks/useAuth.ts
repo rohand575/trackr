@@ -18,7 +18,15 @@ export const useAuth = () => {
       }
       setLoading(false);
     });
-    return unsubscribe;
+
+    // Fallback: if onAuthStateChanged never fires (e.g. IndexedDB unavailable),
+    // force loading off after 8 s so the user reaches the login screen.
+    const timeout = setTimeout(() => setLoading(false), 8000);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(timeout);
+    };
   }, [setUser, setLoading]);
 
   return { user, loading };
