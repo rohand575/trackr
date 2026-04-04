@@ -36,6 +36,14 @@
   to { opacity: 1; transform: scale(1); }
 }
 
+/* iOS safe area utilities — used with viewport-fit=cover */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 * {
   box-sizing: border-box;
 }
