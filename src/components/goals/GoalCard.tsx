@@ -27,6 +27,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [newMilestone, setNewMilestone] = useState('');
+  const [newMilestoneDate, setNewMilestoneDate] = useState('');
   const [addingMilestone, setAddingMilestone] = useState(false);
   const [progressInput, setProgressInput] = useState('');
   const [editingProgress, setEditingProgress] = useState(false);
@@ -71,10 +72,12 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
       id: Math.random().toString(36).slice(2),
       label: newMilestone.trim(),
       completed: false,
+      ...(newMilestoneDate ? { targetDate: newMilestoneDate } : {}),
     };
     const updated = [...goal.milestones, milestone];
     await updateMilestones(user.uid, goal.id, updated);
     setNewMilestone('');
+    setNewMilestoneDate('');
     setAddingMilestone(false);
   };
 
@@ -179,32 +182,50 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Milestones ({completedMilestones}/{goal.milestones.length})</span>
               </div>
               <div className="space-y-1.5">
-                {goal.milestones.map((m) => (
-                  <div key={m.id} className="flex items-center gap-2 group/m">
-                    <button onClick={() => handleToggleMilestone(m)} className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${m.completed ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300 hover:border-indigo-400'}`}>
-                      {m.completed && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
-                    </button>
-                    <span className={`text-xs flex-1 ${m.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>{m.label}</span>
-                    <button onClick={() => handleDeleteMilestone(m)} className="opacity-0 group-hover/m:opacity-100 text-gray-300 hover:text-red-400 transition-all">
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                  </div>
-                ))}
+                {goal.milestones.map((m) => {
+                  const msDay = m.targetDate
+                    ? Math.ceil((new Date(m.targetDate + 'T00:00:00').getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                    : null;
+                  return (
+                    <div key={m.id} className="flex items-start gap-2 group/m">
+                      <button onClick={() => handleToggleMilestone(m)} className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${m.completed ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300 hover:border-indigo-400'}`}>
+                        {m.completed && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <span className={`text-xs ${m.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>{m.label}</span>
+                        {m.targetDate && (
+                          <p className={`text-[10px] mt-0.5 ${msDay !== null && msDay < 0 ? 'text-red-500' : msDay !== null && msDay <= 7 ? 'text-amber-500' : 'text-gray-400 dark:text-gray-500'}`}>
+                            {msDay !== null && (msDay < 0 ? `${Math.abs(msDay)}d overdue` : msDay === 0 ? 'due today' : `due in ${msDay}d`)}
+                          </p>
+                        )}
+                      </div>
+                      <button onClick={() => handleDeleteMilestone(m)} className="opacity-0 group-hover/m:opacity-100 text-gray-300 hover:text-red-400 transition-all mt-0.5">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
 
           {addingMilestone && (
-            <div className="flex items-center gap-2 mb-3">
+            <div className="mb-3 space-y-2">
               <input
                 type="text" value={newMilestone} onChange={(e) => setNewMilestone(e.target.value)}
                 placeholder="Milestone label..."
-                className="flex-1 px-2.5 py-1.5 text-xs border border-indigo-300 dark:border-indigo-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-400"
-                onKeyDown={(e) => { if (e.key === 'Enter') handleAddMilestone(); if (e.key === 'Escape') setAddingMilestone(false); }}
+                className="w-full px-2.5 py-1.5 text-xs border border-indigo-300 dark:border-indigo-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                onKeyDown={(e) => { if (e.key === 'Enter') handleAddMilestone(); if (e.key === 'Escape') { setAddingMilestone(false); setNewMilestoneDate(''); } }}
                 autoFocus
               />
-              <button onClick={handleAddMilestone} className="text-xs text-white bg-indigo-600 hover:bg-indigo-700 px-2.5 py-1.5 rounded-lg">Add</button>
-              <button onClick={() => setAddingMilestone(false)} className="text-xs text-gray-400 hover:text-gray-600 px-1.5 py-1.5">✕</button>
+              <div className="flex items-center gap-2">
+                <input
+                  type="date" value={newMilestoneDate} onChange={(e) => setNewMilestoneDate(e.target.value)}
+                  className="flex-1 px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                />
+                <button onClick={handleAddMilestone} className="text-xs text-white bg-indigo-600 hover:bg-indigo-700 px-2.5 py-1.5 rounded-lg">Add</button>
+                <button onClick={() => { setAddingMilestone(false); setNewMilestoneDate(''); }} className="text-xs text-gray-400 hover:text-gray-600 px-1.5 py-1.5">✕</button>
+              </div>
             </div>
           )}
 

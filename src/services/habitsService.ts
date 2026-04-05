@@ -30,6 +30,7 @@ const toHabit = (id: string, d: Record<string, unknown>): Habit => ({
   icon: (d.icon as string) ?? '✅',
   completions: (d.completions as string[]) ?? [],
   isArchived: (d.isArchived as boolean) ?? false,
+  reminderTime: (d.reminderTime as string | undefined) ?? undefined,
   createdAt:
     d.createdAt instanceof Timestamp
       ? d.createdAt.toDate().toISOString()

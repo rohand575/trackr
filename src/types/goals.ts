@@ -13,6 +13,7 @@ export type GoalStatus = 'Active' | 'Completed' | 'Abandoned';
 export interface Milestone {
   id: string;
   label: string;
+  targetDate?: string; // YYYY-MM-DD
   completed: boolean;
 }
 

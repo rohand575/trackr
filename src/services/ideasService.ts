@@ -12,7 +12,7 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { Idea, IdeaFormData, ChecklistItem } from '../types/ideas';
+import type { Idea, IdeaFormData, ChecklistItem, IdeaKanbanStatus } from '../types/ideas';
 
 const ref = (userId: string) => collection(db, 'users', userId, 'ideas');
 
@@ -32,6 +32,8 @@ const toIdea = (id: string, d: Record<string, unknown>): Idea => ({
   isArchived: (d.isArchived as boolean) ?? false,
   createdAt: tsToIso(d.createdAt),
   updatedAt: tsToIso(d.updatedAt),
+  tags: (d.tags as string[]) ?? [],
+  kanbanStatus: (d.kanbanStatus as IdeaKanbanStatus) ?? 'todo',
 });
 
 export const addIdea = async (userId: string, data: IdeaFormData): Promise<string> => {

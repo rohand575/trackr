@@ -22,6 +22,7 @@ export interface Habit {
   completions: string[];      // array of ISO date strings "YYYY-MM-DD"
   isArchived: boolean;
   createdAt: string;
+  reminderTime?: string;      // "HH:MM" in local time, e.g. "08:00"
 }
 
 export type HabitFormData = Omit<Habit, 'id' | 'userId' | 'createdAt' | 'completions' | 'isArchived'>;

@@ -151,6 +151,17 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onEdit }) => {
             </div>
           )}
 
+          {/* Tags */}
+          {idea.tags?.length > 0 && (
+            <div onClick={(e) => e.stopPropagation()} className="flex flex-wrap gap-1 mt-2">
+              {idea.tags.map((tag) => (
+                <span key={tag} className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-indigo-100/70 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+
           {/* Footer actions */}
           <div
             onClick={(e) => e.stopPropagation()}

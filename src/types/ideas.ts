@@ -15,6 +15,8 @@ export interface ChecklistItem {
   checked: boolean;
 }
 
+export type IdeaKanbanStatus = 'todo' | 'in-progress' | 'done';
+
 export interface Idea {
   id: string;
   userId: string;
@@ -26,6 +28,8 @@ export interface Idea {
   isArchived: boolean;
   createdAt: string;
   updatedAt: string;
+  tags: string[];
+  kanbanStatus: IdeaKanbanStatus;
 }
 
 export type IdeaFormData = Omit<Idea, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;

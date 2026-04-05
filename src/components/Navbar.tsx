@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { logoutUser } from '../services/authService';
 import { useToastStore } from '../store/useToastStore';
 import { useThemeStore } from '../store/useThemeStore';
+import { GlobalSearch } from './GlobalSearch';
 
 const NAV_LINKS = [
   { to: '/dashboard', label: 'Overview', icon: '📊' },
@@ -30,9 +31,33 @@ const MoonIcon = () => (
 export const Navbar: React.FC = () => {
   const { user } = useAuthStore();
   const { addToast } = useToastStore();
-  const { isDark, toggle } = useThemeStore();
+  const { isDark, followSystem, toggle, setFollowSystem } = useThemeStore();
+
+  // Cycle: light → dark → system → light
+  const cycleTheme = () => {
+    if (followSystem) setFollowSystem(false);   // system → light
+    else if (!isDark) toggle();                 // light → dark
+    else setFollowSystem(true);                 // dark → system
+  };
+
+  const themeTitle = followSystem ? 'Theme: System' : isDark ? 'Theme: Dark' : 'Theme: Light';
+  const ThemeIcon = followSystem
+    ? () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+    : isDark ? MoonIcon : SunIcon;
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -50,6 +75,8 @@ export const Navbar: React.FC = () => {
   const emailInitial = user?.email?.[0]?.toUpperCase() ?? '?';
 
   return (
+    <>
+    <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     <header className="sticky top-0 z-30 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 shadow-sm pt-safe transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -87,13 +114,25 @@ export const Navbar: React.FC = () => {
 
           {/* Desktop user menu */}
           <div className="hidden md:flex items-center gap-2">
-            {/* Theme toggle */}
+            {/* Global search button */}
             <button
-              onClick={toggle}
-              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              onClick={() => setSearchOpen(true)}
+              title="Search (Ctrl+K)"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all duration-150"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              <span className="text-xs">Search</span>
+              <kbd className="hidden lg:inline-flex items-center gap-0.5 text-[10px] font-mono px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
+                ⌘K
+              </kbd>
+            </button>
+            {/* Theme toggle (light → dark → system) */}
+            <button
+              onClick={cycleTheme}
+              title={themeTitle}
               className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-150"
             >
-              {isDark ? <SunIcon /> : <MoonIcon />}
+              <ThemeIcon />
             </button>
 
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
@@ -131,14 +170,21 @@ export const Navbar: React.FC = () => {
             </button>
           </div>
 
-          {/* Mobile: theme toggle + hamburger */}
+          {/* Mobile: search + theme toggle + hamburger */}
           <div className="md:hidden flex items-center gap-1">
             <button
-              onClick={toggle}
-              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              onClick={() => setSearchOpen(true)}
+              className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              title="Search"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </button>
+            <button
+              onClick={cycleTheme}
+              title={themeTitle}
               className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              {isDark ? <SunIcon /> : <MoonIcon />}
+              <ThemeIcon />
             </button>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
@@ -217,5 +263,6 @@ export const Navbar: React.FC = () => {
         )}
       </div>
     </header>
+    </>
   );
 };

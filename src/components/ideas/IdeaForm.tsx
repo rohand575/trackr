@@ -18,6 +18,8 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
   const [body, setBody] = useState('');
   const [color, setColor] = useState<IdeaColor>('default');
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
   const [newItemText, setNewItemText] = useState('');
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -30,12 +32,15 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
       setBody(editingIdea.body);
       setColor(editingIdea.color);
       setChecklist(editingIdea.checklist);
+      setTags(editingIdea.tags ?? []);
     } else {
       setTitle('');
       setBody('');
       setColor('default');
       setChecklist([]);
+      setTags([]);
     }
+    setTagInput('');
     setNewItemText('');
     setShowColorPicker(false);
     setTimeout(() => titleRef.current?.focus(), 50);
@@ -60,6 +65,8 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
         pinned: editingIdea?.pinned ?? false,
         checklist,
         isArchived: editingIdea?.isArchived ?? false,
+        tags,
+        kanbanStatus: editingIdea?.kanbanStatus ?? 'todo',
       };
       if (editingIdea) {
         await updateIdea(user.uid, editingIdea.id, formData);
@@ -92,6 +99,15 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
       prev.map((item) => item.id === id ? { ...item, checked: !item.checked } : item)
     );
   };
+
+  const addTag = () => {
+    const tag = tagInput.trim().toLowerCase().replace(/\s+/g, '-');
+    if (!tag || tags.includes(tag)) { setTagInput(''); return; }
+    setTags((prev) => [...prev, tag]);
+    setTagInput('');
+  };
+
+  const removeTag = (tag: string) => setTags((prev) => prev.filter((t) => t !== tag));
 
   if (!isOpen) return null;
 
@@ -184,14 +200,36 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
               className="flex-1 bg-transparent text-sm text-gray-600 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none"
             />
             {newItemText.trim() && (
-              <button
-                type="button"
-                onClick={addChecklistItem}
-                className="text-sm text-indigo-600 font-medium px-1 hover:text-indigo-800 transition-colors"
-              >
+              <button type="button" onClick={addChecklistItem} className="text-sm text-indigo-600 font-medium px-1 hover:text-indigo-800 transition-colors">
                 Add
               </button>
             )}
+          </div>
+
+          {/* Tags */}
+          <div className="mt-4 border-t border-gray-200/60 dark:border-gray-700/60 pt-3">
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {tags.map((tag) => (
+                  <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300">
+                    #{tag}
+                    <button type="button" onClick={() => removeTag(tag)} className="hover:text-red-500 transition-colors">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <svg className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" /></svg>
+              <input
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } if (e.key === ',') { e.preventDefault(); addTag(); } }}
+                placeholder="Add tag (Enter or comma)"
+                className="flex-1 bg-transparent text-xs text-gray-600 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none"
+              />
+            </div>
           </div>
         </div>
 

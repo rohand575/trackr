@@ -18,6 +18,7 @@ const schema = z.object({
   targetDaysPerWeek: z.number().min(1).max(7),
   color: z.string().min(1),
   icon: z.string().min(1),
+  reminderTime: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -39,7 +40,7 @@ export const HabitForm: React.FC<HabitFormProps> = ({ isOpen, onClose, editingHa
     resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: {
       name: '', description: '', category: 'Health', frequency: 'Daily',
-      targetDaysPerWeek: 7, color: '#6366f1', icon: '✅',
+      targetDaysPerWeek: 7, color: '#6366f1', icon: '✅', reminderTime: '',
     },
   });
 
@@ -54,16 +55,20 @@ export const HabitForm: React.FC<HabitFormProps> = ({ isOpen, onClose, editingHa
         category: editingHabit.category, frequency: editingHabit.frequency,
         targetDaysPerWeek: editingHabit.targetDaysPerWeek,
         color: editingHabit.color, icon: editingHabit.icon,
+        reminderTime: editingHabit.reminderTime ?? '',
       });
     } else {
-      reset({ name: '', description: '', category: 'Health', frequency: 'Daily', targetDaysPerWeek: 7, color: '#6366f1', icon: '✅' });
+      reset({ name: '', description: '', category: 'Health', frequency: 'Daily', targetDaysPerWeek: 7, color: '#6366f1', icon: '✅', reminderTime: '' });
     }
   }, [editingHabit, isOpen, reset]);
 
   const onSubmit = async (data: FormValues) => {
     if (!user) return;
     try {
-      const formData: HabitFormData = { ...data };
+      const formData: HabitFormData = {
+        ...data,
+        reminderTime: data.reminderTime?.trim() || undefined,
+      };
       if (editingHabit) {
         await updateHabit(user.uid, editingHabit.id, formData);
         addToast('Habit updated', 'success');
@@ -159,6 +164,21 @@ export const HabitForm: React.FC<HabitFormProps> = ({ isOpen, onClose, editingHa
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Target days per week</label>
             <input {...register('targetDaysPerWeek', { valueAsNumber: true })} type="number" min="1" max="7" className={inputClass} />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Daily reminder
+              <span className="ml-1.5 text-xs text-gray-400 font-normal">(browser notification)</span>
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                {...register('reminderTime')}
+                type="time"
+                className={`${inputClass} w-auto`}
+              />
+              <p className="text-xs text-gray-400 dark:text-gray-500">Leave blank to skip reminders</p>
+            </div>
           </div>
 
           <div>

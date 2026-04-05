@@ -17,6 +17,8 @@ import { LoadingSpinner } from './components/LoadingSpinner';
 import { useAuth } from './hooks/useAuth';
 import { useBiometric } from './hooks/useBiometric';
 import { usePaymentsStore } from './store/usePaymentsStore';
+import { useHabitsStore } from './store/useHabitsStore';
+import { useHabitReminders } from './hooks/useHabitReminders';
 import {
   createRenewalChannel,
   requestNotificationPermission,
@@ -58,6 +60,7 @@ const DeepLinkHandler: React.FC = () => {
 // ---------------------------------------------------------------------------
 const NotificationManager: React.FC = () => {
   const { payments } = usePaymentsStore();
+  const { habits } = useHabitsStore();
   const subscriptions = payments.filter((p) => p.type === 'subscription');
 
   useEffect(() => {
@@ -72,6 +75,9 @@ const NotificationManager: React.FC = () => {
       scheduleRenewalNotifications(subscriptions as unknown as Parameters<typeof scheduleRenewalNotifications>[0]);
     }
   }, [subscriptions]);
+
+  // Browser push notifications for habit reminders
+  useHabitReminders(habits);
 
   return null;
 };
@@ -98,11 +104,20 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 // ---------------------------------------------------------------------------
 const App: React.FC = () => {
   const biometric = useBiometric();
-  const { isDark } = useThemeStore();
+  const { isDark, followSystem, setFollowSystem } = useThemeStore();
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
   }, [isDark]);
+
+  // Keep isDark in sync with OS preference when followSystem is enabled
+  useEffect(() => {
+    if (!followSystem) return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => setFollowSystem(true); // re-reads current system value
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [followSystem, setFollowSystem]);
 
   // Lock the app when it goes to the background (iOS/Android pause event)
   useEffect(() => {
