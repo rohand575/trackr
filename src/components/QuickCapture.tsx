@@ -53,6 +53,8 @@ export const QuickCapture: React.FC = () => {
         pinned: false,
         checklist: [],
         isArchived: false,
+        tags: [],
+        kanbanStatus: 'todo',
       });
       addToast('Idea captured!', 'success');
       handleClose();

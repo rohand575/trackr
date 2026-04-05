@@ -64,28 +64,33 @@ export const scheduleHabitCheckIns = async (habits: Habit[]) => {
       await LocalNotifications.cancel({ notifications: toCancel });
     }
 
-    const activeHabits = habits.filter((h) => !h.isArchived);
+    // Only schedule habits that have a reminder time set.
+    const activeHabits = habits.filter((h) => !h.isArchived && !!h.reminderTime);
     if (activeHabits.length === 0) return;
 
-    // Fire at 21:30 today; if that moment has already passed, start tomorrow.
     const now = new Date();
-    const fireTime = new Date();
-    fireTime.setHours(21, 30, 0, 0);
-    if (fireTime <= now) fireTime.setDate(fireTime.getDate() + 1);
 
-    const batch = activeHabits.slice(0, CHECKIN_ID_END - CHECKIN_ID_START + 1).map((habit, index) => ({
-      id: CHECKIN_ID_START + index,
-      title: `${habit.icon} ${habit.name}`,
-      body: 'Did you complete this today?',
-      channelId: HABIT_CHECKIN_CHANNEL_ID,
-      actionTypeId: HABIT_CHECKIN_ACTION_TYPE,
-      schedule: {
-        at: fireTime,
-        repeats: true,
-        every: 'day' as const,
-      },
-      extra: { habitId: habit.id, notificationType: 'habit-checkin' },
-    }));
+    const batch = activeHabits.slice(0, CHECKIN_ID_END - CHECKIN_ID_START + 1).map((habit, index) => {
+      const [hour, minute] = habit.reminderTime!.split(':').map(Number);
+      const fireTime = new Date();
+      fireTime.setHours(hour, minute, 0, 0);
+      // If that time has already passed today, start from tomorrow.
+      if (fireTime <= now) fireTime.setDate(fireTime.getDate() + 1);
+
+      return {
+        id: CHECKIN_ID_START + index,
+        title: `${habit.icon} ${habit.name}`,
+        body: 'Did you complete this today?',
+        channelId: HABIT_CHECKIN_CHANNEL_ID,
+        actionTypeId: HABIT_CHECKIN_ACTION_TYPE,
+        schedule: {
+          at: fireTime,
+          repeats: true,
+          every: 'day' as const,
+        },
+        extra: { habitId: habit.id, notificationType: 'habit-checkin' },
+      };
+    });
 
     await LocalNotifications.schedule({ notifications: batch });
   } catch (err) {

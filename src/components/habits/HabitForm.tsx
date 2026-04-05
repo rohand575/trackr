@@ -168,8 +168,7 @@ export const HabitForm: React.FC<HabitFormProps> = ({ isOpen, onClose, editingHa
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Daily reminder
-              <span className="ml-1.5 text-xs text-gray-400 font-normal">(browser notification)</span>
+              Daily reminder time
             </label>
             <div className="flex items-center gap-3">
               <input
@@ -177,7 +176,7 @@ export const HabitForm: React.FC<HabitFormProps> = ({ isOpen, onClose, editingHa
                 type="time"
                 className={`${inputClass} w-auto`}
               />
-              <p className="text-xs text-gray-400 dark:text-gray-500">Leave blank to skip reminders</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">Notifies you daily — works even when the app is closed</p>
             </div>
           </div>
 
