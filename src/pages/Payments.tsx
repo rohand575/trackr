@@ -67,15 +67,15 @@ export const Payments: React.FC = () => {
   const activeCount = payments.filter((p) => p.status === 'Active').length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-200">
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 sm:pb-10">
         {/* Page Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Payments</h1>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Payments</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
               {payments.length === 0 ? 'No payments tracked yet' : `${activeCount} active payment${activeCount !== 1 ? 's' : ''}`}
             </p>
           </div>

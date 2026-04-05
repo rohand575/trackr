@@ -69,7 +69,7 @@ export const QuickCapture: React.FC = () => {
       {!isOpen && (
         <button
           onClick={handleOpen}
-          className="fixed bottom-6 left-6 w-12 h-12 bg-white border border-gray-200 text-xl rounded-full shadow-lg hover:shadow-xl hover:scale-105 flex items-center justify-center transition-all duration-200 z-30"
+          className="fixed bottom-6 left-6 w-12 h-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-xl rounded-full shadow-lg hover:shadow-xl hover:scale-105 flex items-center justify-center transition-all duration-200 z-30"
           title="Quick capture idea"
         >
           💡
@@ -80,7 +80,7 @@ export const QuickCapture: React.FC = () => {
       {isOpen && (
         <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center px-4 pb-4 sm:pb-0">
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm animate-fade-in" onClick={handleClose} />
-          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl animate-slide-up">
+          <div className="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl animate-slide-up">
             <div className="p-5">
               {/* Title */}
               <input
@@ -89,7 +89,7 @@ export const QuickCapture: React.FC = () => {
                 onChange={(e) => setTitle(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && title.trim()) handleSave(); }}
                 placeholder="What's on your mind?"
-                className="w-full text-base font-semibold text-gray-900 placeholder:text-gray-400 border-0 p-0 focus:outline-none focus:ring-0 bg-transparent"
+                className="w-full text-base font-semibold text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 border-0 p-0 focus:outline-none focus:ring-0 bg-transparent"
               />
 
               {/* Body (optional) */}
@@ -98,16 +98,16 @@ export const QuickCapture: React.FC = () => {
                 onChange={(e) => setBody(e.target.value)}
                 placeholder="Add a note..."
                 rows={2}
-                className="w-full mt-3 text-sm text-gray-600 placeholder:text-gray-400 border-0 p-0 focus:outline-none focus:ring-0 bg-transparent resize-none"
+                className="w-full mt-3 text-sm text-gray-600 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 border-0 p-0 focus:outline-none focus:ring-0 bg-transparent resize-none"
               />
 
               {/* Color picker + actions */}
-              <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-gray-800">
                 <IdeaColorPicker value={color} onChange={setColor} size="sm" />
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleClose}
-                    className="px-3 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-700 rounded-lg transition-colors"
+                    className="px-3 py-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-lg transition-colors"
                   >
                     Cancel
                   </button>

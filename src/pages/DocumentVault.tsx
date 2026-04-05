@@ -25,9 +25,9 @@ const STATUS_OPTIONS: { label: string; value: FilterStatus; dot?: string }[] = [
 
 const EmptyDocuments: React.FC<{ onAdd: () => void }> = ({ onAdd }) => (
   <div className="flex flex-col items-center justify-center py-16 text-center">
-    <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mb-5 text-4xl">🗂️</div>
-    <h3 className="text-lg font-semibold text-gray-800 mb-2">Your vault is empty</h3>
-    <p className="text-sm text-gray-400 mb-6 max-w-xs">
+    <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-950/50 rounded-3xl flex items-center justify-center mb-5 text-4xl">🗂️</div>
+    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Your vault is empty</h3>
+    <p className="text-sm text-gray-400 dark:text-gray-500 mb-6 max-w-xs">
       Add your important documents, IDs, and certificates to keep track of expiry dates
     </p>
     <button
@@ -73,15 +73,15 @@ export const DocumentVault: React.FC = () => {
   const expired = documents.filter((d) => getDocumentStatus(d.expiryDate) === 'Expired').length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-200">
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 sm:pb-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Document Vault</h1>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Document Vault</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
               {documents.length} document{documents.length !== 1 ? 's' : ''}
               {expiringSoon > 0 && <span className="text-amber-600"> · {expiringSoon} expiring soon</span>}
               {expired > 0 && <span className="text-red-600"> · {expired} expired</span>}
@@ -111,7 +111,7 @@ export const DocumentVault: React.FC = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search documents..."
-                className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors"
               />
             </div>
 
@@ -120,7 +120,7 @@ export const DocumentVault: React.FC = () => {
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value as FilterCategory)}
-                className="appearance-none pl-3 pr-8 py-2.5 text-sm border border-gray-200 rounded-xl bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 cursor-pointer"
+                className="appearance-none pl-3 pr-8 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 cursor-pointer"
               >
                 <option value="All">All Categories</option>
                 {CATEGORIES.map((c) => (
@@ -133,15 +133,15 @@ export const DocumentVault: React.FC = () => {
             </div>
 
             {/* Status filter */}
-            <div className="flex gap-1.5 bg-gray-100 p-1 rounded-xl overflow-x-auto">
+            <div className="flex gap-1.5 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl overflow-x-auto">
               {STATUS_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => setFilterStatus(opt.value)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                     filterStatus === opt.value
-                      ? 'bg-white text-gray-800 shadow-sm border border-gray-200/80'
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm border border-gray-200/80 dark:border-gray-600'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                   }`}
                 >
                   {opt.dot && <span className={`w-1.5 h-1.5 rounded-full ${opt.dot}`} />}
@@ -159,9 +159,9 @@ export const DocumentVault: React.FC = () => {
           <EmptyDocuments onAdd={() => setFormOpen(true)} />
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-4 text-3xl">🔍</div>
-            <h3 className="text-base font-semibold text-gray-700 mb-1">No matching documents</h3>
-            <p className="text-sm text-gray-400">Try adjusting your search or filters</p>
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-4 text-3xl">🔍</div>
+            <h3 className="text-base font-semibold text-gray-700 dark:text-gray-200 mb-1">No matching documents</h3>
+            <p className="text-sm text-gray-400 dark:text-gray-500">Try adjusting your search or filters</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

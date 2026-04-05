@@ -20,16 +20,16 @@ export const HabitsTodayWidget: React.FC<HabitsTodayWidgetProps> = ({ data }) =>
   const allDone = totalToday > 0 && completedCount === totalToday;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Habits</h2>
+          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Habits</h2>
           {totalToday > 0 && (
             <span
               className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                 allDone
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'bg-gray-100 text-gray-600'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
               }`}
             >
               {completedCount}/{totalToday} today
@@ -40,9 +40,9 @@ export const HabitsTodayWidget: React.FC<HabitsTodayWidgetProps> = ({ data }) =>
       </div>
 
       {data.activeHabits.length === 0 ? (
-        <div className="py-4 text-center text-gray-400 text-sm">
+        <div className="py-4 text-center text-gray-400 dark:text-gray-500 text-sm">
           No habits yet
-          <Link to="/goals-habits" className="block text-indigo-600 text-xs font-medium hover:underline mt-1">
+          <Link to="/goals-habits" className="block text-indigo-600 dark:text-indigo-400 text-xs font-medium hover:underline mt-1">
             Start one →
           </Link>
         </div>
@@ -77,19 +77,19 @@ export const HabitsTodayWidget: React.FC<HabitsTodayWidgetProps> = ({ data }) =>
           {/* Streak leaderboard */}
           {topStreaks.length > 0 && (
             <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">🔥 Top Streaks</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">🔥 Top Streaks</p>
               <div className="space-y-2.5">
                 {topStreaks.map(({ habit, streak }) => (
                   <div key={habit.id} className="flex items-center gap-3">
                     <span className="text-base leading-none w-6 text-center">{habit.icon}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-medium text-gray-700 truncate">{habit.name}</span>
-                        <span className="text-xs font-bold text-gray-500 ml-2 shrink-0">
+                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{habit.name}</span>
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 ml-2 shrink-0">
                           {streak}d
                         </span>
                       </div>
-                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-700"
                           style={{
@@ -107,7 +107,7 @@ export const HabitsTodayWidget: React.FC<HabitsTodayWidgetProps> = ({ data }) =>
         </>
       )}
 
-      <Link to="/goals-habits" className="text-xs text-indigo-600 hover:underline font-medium self-start">
+      <Link to="/goals-habits" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium self-start">
         View all habits →
       </Link>
     </div>

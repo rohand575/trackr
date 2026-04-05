@@ -55,9 +55,9 @@ export const UpcomingPaymentsWidget: React.FC<UpcomingPaymentsWidgetProps> = ({ 
   const today = next7Dates[0];
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5 flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Upcoming Payments</h2>
+        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Upcoming Payments</h2>
         <span className="text-lg">📅</span>
       </div>
 
@@ -68,11 +68,11 @@ export const UpcomingPaymentsWidget: React.FC<UpcomingPaymentsWidgetProps> = ({ 
           const isToday = date === today;
           return (
             <div key={date} className="flex-1 flex flex-col items-center gap-1.5">
-              <span className={`text-[10px] font-medium ${isToday ? 'text-indigo-600' : 'text-gray-400'}`}>
+              <span className={`text-[10px] font-medium ${isToday ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'}`}>
                 {getDayLabel(date)}
               </span>
               <div
-                className={`w-full h-1.5 rounded-full ${isToday ? 'bg-indigo-100' : 'bg-gray-50'}`}
+                className={`w-full h-1.5 rounded-full ${isToday ? 'bg-indigo-100 dark:bg-indigo-900/50' : 'bg-gray-50 dark:bg-gray-800'}`}
               />
               <div className="flex flex-wrap gap-0.5 justify-center min-h-[10px]">
                 {payments.slice(0, 2).map((p) => (
@@ -94,7 +94,7 @@ export const UpcomingPaymentsWidget: React.FC<UpcomingPaymentsWidgetProps> = ({ 
 
       {/* Payment list */}
       {data.upcomingPayments.length === 0 ? (
-        <div className="py-4 text-center text-gray-400 text-sm">
+        <div className="py-4 text-center text-gray-400 dark:text-gray-500 text-sm">
           No payments in the next 7 days
         </div>
       ) : (
@@ -109,17 +109,17 @@ export const UpcomingPaymentsWidget: React.FC<UpcomingPaymentsWidgetProps> = ({ 
                   {catCfg.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 truncate">{p.name}</p>
-                  <p className="text-xs text-gray-400">{formatCurrency(p.amount, p.currency)}</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{p.name}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">{formatCurrency(p.amount, p.currency)}</p>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <span
                     className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                       p.daysUntil === 0
-                        ? 'bg-red-50 text-red-600'
+                        ? 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400'
                         : p.daysUntil <= 3
-                        ? 'bg-amber-50 text-amber-600'
-                        : 'bg-gray-50 text-gray-500'
+                        ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400'
+                        : 'bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
                     }`}
                   >
                     {formatDue(p.daysUntil)}
@@ -127,8 +127,8 @@ export const UpcomingPaymentsWidget: React.FC<UpcomingPaymentsWidgetProps> = ({ 
                   <span
                     className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
                       p.source === 'subscription'
-                        ? 'bg-indigo-50 text-indigo-500'
-                        : 'bg-teal-50 text-teal-600'
+                        ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-500 dark:text-indigo-400'
+                        : 'bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400'
                     }`}
                   >
                     {p.source === 'subscription' ? 'Sub' : 'Bill'}
@@ -138,18 +138,18 @@ export const UpcomingPaymentsWidget: React.FC<UpcomingPaymentsWidgetProps> = ({ 
             );
           })}
           {data.upcomingPayments.length > 6 && (
-            <p className="text-xs text-gray-400 text-center pt-1">
+            <p className="text-xs text-gray-400 dark:text-gray-500 text-center pt-1">
               +{data.upcomingPayments.length - 6} more
             </p>
           )}
         </div>
       )}
 
-      <div className="flex gap-3 pt-1 border-t border-gray-50">
-        <Link to="/subscriptions" className="text-xs text-indigo-600 hover:underline font-medium">
+      <div className="flex gap-3 pt-1 border-t border-gray-50 dark:border-gray-800">
+        <Link to="/subscriptions" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
           Subscriptions →
         </Link>
-        <Link to="/bills" className="text-xs text-teal-600 hover:underline font-medium">
+        <Link to="/bills" className="text-xs text-teal-600 dark:text-teal-400 hover:underline font-medium">
           Bills →
         </Link>
       </div>

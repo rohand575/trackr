@@ -77,16 +77,16 @@ export const FeatureNavCards: React.FC<FeatureNavCardsProps> = ({ data }) => {
         <Link
           key={card.to}
           to={card.to}
-          className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-2 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${card.hoverBorder}`}
+          className={`bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-4 flex flex-col gap-2 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${card.hoverBorder}`}
         >
           <div className={`w-9 h-9 rounded-xl ${card.bg} flex items-center justify-center text-xl`}>
             {card.icon}
           </div>
           <div>
-            <p className="text-xs font-semibold text-gray-500">{card.label}</p>
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">{card.label}</p>
             <p className={`text-xs font-bold mt-0.5 ${card.textColor} truncate`}>{card.metric1}</p>
           </div>
-          <div className="flex items-center gap-1 text-xs text-gray-400 mt-auto">
+          <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 mt-auto">
             <span>View all</span>
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />

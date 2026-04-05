@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Class-based dark mode — toggled by adding .dark to <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary-50: #eef2ff;
   --color-primary-100: #e0e7ff;
@@ -59,6 +62,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #f8fafc;
   overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dark body {
+  background-color: #030712;
 }
 
 #root {
@@ -79,4 +87,14 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #111827;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #374151;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
 }

@@ -16,9 +16,9 @@ const CATEGORY_ICONS: Record<string, string> = {
 };
 
 const STATUS_STYLES: Record<Goal['status'], string> = {
-  Active: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-  Completed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  Abandoned: 'bg-gray-100 text-gray-500 border-gray-200',
+  Active: 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/50',
+  Completed: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50',
+  Abandoned: 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700',
 };
 
 export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
@@ -88,17 +88,17 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
 
   return (
     <>
-      <div className={`group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${goal.status === 'Abandoned' ? 'opacity-60' : ''}`}>
+      <div className={`group bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${goal.status === 'Abandoned' ? 'opacity-60' : ''}`}>
         <div className="p-5">
           {/* Header */}
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="flex items-start gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-xl shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center text-xl shrink-0">
                 {CATEGORY_ICONS[goal.category] ?? '🎯'}
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-gray-900 truncate">{goal.title}</h3>
-                <p className="text-xs text-gray-500">{goal.category}</p>
+                <h3 className="font-semibold text-gray-900 dark:text-white truncate">{goal.title}</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{goal.category}</p>
               </div>
             </div>
             <div className="flex items-center gap-1 shrink-0">
@@ -117,7 +117,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
               {/* Circular ring */}
               <div className="relative w-14 h-14 shrink-0">
                 <svg className="w-14 h-14 -rotate-90" viewBox="0 0 48 48">
-                  <circle cx="24" cy="24" r="19" fill="none" stroke="#f3f4f6" strokeWidth="4.5" />
+                  <circle cx="24" cy="24" r="19" fill="none" strokeWidth="4.5" className="stroke-gray-100 dark:stroke-gray-700" />
                   <circle
                     cx="24" cy="24" r="19" fill="none"
                     stroke={progress >= 100 ? '#10b981' : progress >= 60 ? '#6366f1' : '#818cf8'}
@@ -129,14 +129,14 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-[11px] font-bold text-gray-700">{Math.round(progress)}%</span>
+                  <span className="text-[11px] font-bold text-gray-700 dark:text-gray-200">{Math.round(progress)}%</span>
                 </div>
               </div>
 
               {/* Details */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-gray-500">Progress</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Progress</span>
                   <span className={`text-xs font-medium ${daysLeft < 0 ? 'text-red-500' : daysLeft <= 14 ? 'text-amber-600' : 'text-gray-400'}`}>
                     {daysLeft < 0 ? `${Math.abs(daysLeft)}d overdue` : daysLeft === 0 ? 'Due today' : `${daysLeft}d left`}
                   </span>
@@ -146,7 +146,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
                     <input
                       type="number" value={progressInput} onChange={(e) => setProgressInput(e.target.value)}
                       placeholder={String(goal.currentValue)}
-                      className="w-20 px-2 py-0.5 text-xs border border-indigo-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                      className="w-20 px-2 py-0.5 text-xs border border-indigo-300 dark:border-indigo-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-400"
                       autoFocus
                     />
                     <button onClick={handleProgressUpdate} className="text-xs text-indigo-600 font-medium hover:text-indigo-800">Save</button>
@@ -155,12 +155,12 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
                 ) : (
                   <button
                     onClick={() => { setEditingProgress(true); setProgressInput(String(goal.currentValue)); }}
-                    className="text-xs font-semibold text-gray-700 hover:text-indigo-600 transition-colors mb-1.5 block"
+                    className="text-xs font-semibold text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mb-1.5 block"
                   >
                     {goal.currentValue} / {goal.targetValue} {goal.unit}
                   </button>
                 )}
-                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${
                       progress >= 100 ? 'bg-emerald-500' : progress >= 60 ? 'bg-indigo-500' : 'bg-indigo-400'
@@ -174,9 +174,9 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
 
           {/* Milestones */}
           {(goal.milestones.length > 0 || addingMilestone) && (
-            <div className="mb-3 border-t border-gray-50 pt-3">
+            <div className="mb-3 border-t border-gray-50 dark:border-gray-800 pt-3">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-gray-500">Milestones ({completedMilestones}/{goal.milestones.length})</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Milestones ({completedMilestones}/{goal.milestones.length})</span>
               </div>
               <div className="space-y-1.5">
                 {goal.milestones.map((m) => (
@@ -184,7 +184,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
                     <button onClick={() => handleToggleMilestone(m)} className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${m.completed ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300 hover:border-indigo-400'}`}>
                       {m.completed && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                     </button>
-                    <span className={`text-xs flex-1 ${m.completed ? 'line-through text-gray-400' : 'text-gray-700'}`}>{m.label}</span>
+                    <span className={`text-xs flex-1 ${m.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>{m.label}</span>
                     <button onClick={() => handleDeleteMilestone(m)} className="opacity-0 group-hover/m:opacity-100 text-gray-300 hover:text-red-400 transition-all">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
@@ -199,7 +199,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
               <input
                 type="text" value={newMilestone} onChange={(e) => setNewMilestone(e.target.value)}
                 placeholder="Milestone label..."
-                className="flex-1 px-2.5 py-1.5 text-xs border border-indigo-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                className="flex-1 px-2.5 py-1.5 text-xs border border-indigo-300 dark:border-indigo-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-400"
                 onKeyDown={(e) => { if (e.key === 'Enter') handleAddMilestone(); if (e.key === 'Escape') setAddingMilestone(false); }}
                 autoFocus
               />
@@ -209,20 +209,20 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
           )}
 
           {/* Footer */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+          <div className="flex items-center justify-between pt-3 border-t border-gray-50 dark:border-gray-800">
             <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${STATUS_STYLES[goal.status]}`}>
               {goal.status}
             </span>
             <button
               onClick={() => setAddingMilestone(true)}
-              className="flex items-center gap-1 text-xs text-gray-400 hover:text-indigo-600 transition-colors"
+              className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
               Milestone
             </button>
           </div>
 
-          {goal.description && <p className="mt-2 text-xs text-gray-400 italic">{goal.description}</p>}
+          {goal.description && <p className="mt-2 text-xs text-gray-400 dark:text-gray-500 italic">{goal.description}</p>}
         </div>
       </div>
 

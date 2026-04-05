@@ -25,8 +25,8 @@ interface GoalFormProps {
   editingGoal?: Goal | null;
 }
 
-const inputClass = 'w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors';
-const selectClass = 'w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors appearance-none cursor-pointer';
+const inputClass = 'w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors';
+const selectClass = 'w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors appearance-none cursor-pointer';
 
 const CATEGORY_ICONS: Record<string, string> = {
   Finance: '💰', Health: '🏥', Career: '💼', Education: '📚',
@@ -84,13 +84,13 @@ export const GoalForm: React.FC<GoalFormProps> = ({ isOpen, onClose, editingGoal
   return (
     <div className="fixed inset-0 z-40 flex items-start justify-center px-4 py-6 overflow-y-auto">
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl animate-scale-in mt-4 mb-4">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+      <div className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl animate-scale-in mt-4 mb-4">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">{editingGoal ? 'Edit Goal' : 'New Goal'}</h2>
-            <p className="text-sm text-gray-500 mt-0.5">Set a measurable target with a deadline</p>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">{editingGoal ? 'Edit Goal' : 'New Goal'}</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Set a measurable target with a deadline</p>
           </div>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -99,14 +99,14 @@ export const GoalForm: React.FC<GoalFormProps> = ({ isOpen, onClose, editingGoal
 
         <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-5 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Title <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Title <span className="text-red-500">*</span></label>
             <input {...register('title')} placeholder="e.g. Save €5000 for travel" className={inputClass} />
             {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Category <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Category <span className="text-red-500">*</span></label>
               <div className="relative">
                 <select {...register('category')} className={selectClass}>
                   {Object.entries(CATEGORY_ICONS).map(([cat, icon]) => (
@@ -117,7 +117,7 @@ export const GoalForm: React.FC<GoalFormProps> = ({ isOpen, onClose, editingGoal
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Status</label>
               <div className="relative">
                 <select {...register('status')} className={selectClass}>
                   <option value="Active">Active</option>
@@ -131,30 +131,30 @@ export const GoalForm: React.FC<GoalFormProps> = ({ isOpen, onClose, editingGoal
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Target <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Target <span className="text-red-500">*</span></label>
               <input {...register('targetValue', { valueAsNumber: true })} type="number" step="any" min="0" placeholder="e.g. 5000" className={inputClass} />
               {errors.targetValue && <p className="mt-1 text-xs text-red-600">{errors.targetValue.message}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Unit <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Unit <span className="text-red-500">*</span></label>
               <input {...register('unit')} placeholder="e.g. EUR, km, books" className={inputClass} />
               {errors.unit && <p className="mt-1 text-xs text-red-600">{errors.unit.message}</p>}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Deadline <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Deadline <span className="text-red-500">*</span></label>
             <input {...register('deadline')} type="date" className={inputClass} />
             {errors.deadline && <p className="mt-1 text-xs text-red-600">{errors.deadline.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Description</label>
             <textarea {...register('description')} rows={2} placeholder="What does achieving this goal mean to you?" className={`${inputClass} resize-none`} />
           </div>
 
-          <div className="flex gap-3 pt-4 border-t border-gray-100">
-            <button type="button" onClick={onClose} disabled={isSubmitting} className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50">Cancel</button>
+          <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <button type="button" onClick={onClose} disabled={isSubmitting} className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50">Cancel</button>
             <button type="submit" disabled={isSubmitting} className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm shadow-indigo-200">
               {isSubmitting && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
               {editingGoal ? 'Save Changes' : 'Create Goal'}

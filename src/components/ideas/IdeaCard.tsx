@@ -87,7 +87,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onEdit }) => {
         <div className="p-4">
           {/* Header: title + pin */}
           <div className="flex items-start justify-between gap-2 mb-1">
-            <h3 className="font-semibold text-gray-900 text-sm leading-snug break-words min-w-0">
+            <h3 className="font-semibold text-gray-900 dark:text-white text-sm leading-snug break-words min-w-0">
               {idea.title}
             </h3>
             <button
@@ -107,7 +107,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onEdit }) => {
 
           {/* Body text */}
           {idea.body && (
-            <p className="text-xs text-gray-600 leading-relaxed mb-3 whitespace-pre-line line-clamp-6">
+            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed mb-3 whitespace-pre-line line-clamp-6">
               {idea.body}
             </p>
           )}
@@ -129,7 +129,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onEdit }) => {
                   />
                   <span
                     className={`text-xs leading-snug break-words ${
-                      item.checked ? 'text-gray-400 line-through' : 'text-gray-700'
+                      item.checked ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-700 dark:text-gray-300'
                     }`}
                   >
                     {item.text}
@@ -137,7 +137,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onEdit }) => {
                 </label>
               ))}
               {idea.checklist.length > 1 && (
-                <p className="text-[10px] text-gray-400 mt-1">
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
                   {checkedCount}/{idea.checklist.length} done
                 </p>
               )}
@@ -146,7 +146,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onEdit }) => {
 
           {/* Inline color picker (toggled) */}
           {showColorPicker && (
-            <div onClick={(e) => e.stopPropagation()} className="mt-3 pt-3 border-t border-gray-100/60">
+            <div onClick={(e) => e.stopPropagation()} className="mt-3 pt-3 border-t border-gray-200/60 dark:border-gray-700/60">
               <IdeaColorPicker value={idea.color} onChange={handleColorChange} size="sm" />
             </div>
           )}
@@ -154,7 +154,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onEdit }) => {
           {/* Footer actions */}
           <div
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100/60"
+            className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200/60 dark:border-gray-700/60"
           >
             <div className="flex items-center gap-0.5">
               {/* Color picker toggle */}

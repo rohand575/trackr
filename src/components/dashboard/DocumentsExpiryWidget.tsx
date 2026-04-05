@@ -47,8 +47,8 @@ const DocRow: React.FC<DocRowProps> = ({ doc, type }) => {
       />
       <span className="text-base leading-none">{icon}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-800 truncate">{doc.name}</p>
-        <p className="text-xs text-gray-400">{doc.category}</p>
+        <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{doc.name}</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500">{doc.category}</p>
       </div>
       <span
         className={`text-xs font-semibold shrink-0 ${
@@ -72,16 +72,16 @@ export const DocumentsExpiryWidget: React.FC<DocumentsExpiryWidgetProps> = ({ da
   const hasUrgent = urgentCount > 0;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5 flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Documents</h2>
+        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Documents</h2>
         <span className="text-lg">{hasUrgent ? '⚠️' : '🗂️'}</span>
       </div>
 
       {data.expiredDocs.length === 0 && data.expiringSoonDocs.length === 0 && data.totalValidDocs === 0 ? (
-        <div className="py-4 text-center text-gray-400 text-sm">
+        <div className="py-4 text-center text-gray-400 dark:text-gray-500 text-sm">
           No documents added yet
-          <Link to="/documents" className="block text-indigo-600 text-xs font-medium hover:underline mt-1">
+          <Link to="/documents" className="block text-indigo-600 dark:text-indigo-400 text-xs font-medium hover:underline mt-1">
             Add documents →
           </Link>
         </div>
@@ -97,7 +97,7 @@ export const DocumentsExpiryWidget: React.FC<DocumentsExpiryWidgetProps> = ({ da
                 <DocRow key={doc.id} doc={doc} type="expiring" />
               ))}
               {urgentCount > 6 && (
-                <p className="text-xs text-gray-400 text-center">+{urgentCount - 6} more</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 text-center">+{urgentCount - 6} more</p>
               )}
             </div>
           ) : (
@@ -111,14 +111,14 @@ export const DocumentsExpiryWidget: React.FC<DocumentsExpiryWidgetProps> = ({ da
 
           {/* Footer: valid count */}
           {data.totalValidDocs > 0 && (
-            <p className="text-xs text-gray-400 pt-1 border-t border-gray-50">
+            <p className="text-xs text-gray-400 dark:text-gray-500 pt-1 border-t border-gray-50 dark:border-gray-800">
               ✅ {data.totalValidDocs} other doc{data.totalValidDocs === 1 ? '' : 's'} valid
             </p>
           )}
         </>
       )}
 
-      <Link to="/documents" className="text-xs text-indigo-600 hover:underline font-medium self-start">
+      <Link to="/documents" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium self-start">
         View all documents →
       </Link>
     </div>

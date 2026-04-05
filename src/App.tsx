@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useThemeStore } from './store/useThemeStore';
 import { App as CapApp } from '@capacitor/app';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
@@ -97,6 +98,11 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 // ---------------------------------------------------------------------------
 const App: React.FC = () => {
   const biometric = useBiometric();
+  const { isDark } = useThemeStore();
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDark);
+  }, [isDark]);
 
   // Lock the app when it goes to the background (iOS/Android pause event)
   useEffect(() => {

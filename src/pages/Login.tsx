@@ -14,7 +14,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 const inputClass =
-  'w-full px-4 py-3 text-sm border border-gray-200 rounded-xl bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all';
+  'w-full px-4 py-3 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -45,7 +45,7 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20 dark:from-gray-950 dark:via-indigo-950/20 dark:to-gray-950 flex items-center justify-center px-4 py-12 transition-colors duration-200">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
@@ -54,22 +54,22 @@ export const Login: React.FC = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-            Track<span className="text-indigo-600">r</span>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+            Track<span className="text-indigo-600 dark:text-indigo-400">r</span>
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Manage your subscriptions with ease</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your subscriptions with ease</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-xl shadow-gray-100/80 p-8">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-xl shadow-gray-100/80 dark:shadow-none p-8">
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-gray-900">Sign in</h2>
-            <p className="text-sm text-gray-500 mt-1">Enter your credentials to access your account</p>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Sign in</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Enter your credentials to access your account</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                 Email address
               </label>
               <input
@@ -85,7 +85,7 @@ export const Login: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                 Password
               </label>
               <div className="relative">
@@ -135,9 +135,9 @@ export const Login: React.FC = () => {
           </form>
         </div>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
           Don't have an account?{' '}
-          <Link to="/register" className="text-indigo-600 hover:text-indigo-700 font-medium">
+          <Link to="/register" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium">
             Create one
           </Link>
         </p>

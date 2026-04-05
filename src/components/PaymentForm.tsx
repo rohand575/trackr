@@ -45,7 +45,7 @@ interface FormFieldProps {
 
 const FormField: React.FC<FormFieldProps> = ({ label, error, required, children }) => (
   <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
       {label}
       {required && <span className="text-red-500 ml-0.5">*</span>}
     </label>
@@ -55,10 +55,10 @@ const FormField: React.FC<FormFieldProps> = ({ label, error, required, children 
 );
 
 const inputClass =
-  'w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors';
+  'w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors';
 
 const selectClass =
-  'w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors appearance-none cursor-pointer';
+  'w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors appearance-none cursor-pointer';
 
 const getDefaults = (type: 'subscription' | 'bill'): FormValues => ({
   type,
@@ -194,22 +194,22 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ isOpen, onClose, editi
         className="fixed inset-0 bg-black/40 backdrop-blur-sm animate-fade-in"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl animate-scale-in mt-4 mb-4">
+      <div className="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl animate-scale-in mt-4 mb-4">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">
               {isEditing
                 ? `Edit ${isBill ? 'Bill' : 'Subscription'}`
                 : 'Add Payment'}
             </h2>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
               {isEditing ? 'Update the details below' : 'Track a new subscription or bill'}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -220,16 +220,16 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ isOpen, onClose, editi
         <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-5">
           {/* Type toggle — locked when editing */}
           <div className="mb-5">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
-            <div className="flex gap-1 p-1 bg-gray-100 rounded-xl w-fit">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
+            <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-fit">
               <button
                 type="button"
                 disabled={isEditing}
                 onClick={() => setValue('type', 'subscription')}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 disabled:cursor-not-allowed ${
                   !isBill
-                    ? 'bg-white text-indigo-700 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'bg-white dark:bg-gray-700 text-indigo-700 dark:text-indigo-300 shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                 }`}
               >
                 Subscription
@@ -240,8 +240,8 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ isOpen, onClose, editi
                 onClick={() => setValue('type', 'bill')}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 disabled:cursor-not-allowed ${
                   isBill
-                    ? 'bg-white text-violet-700 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'bg-white dark:bg-gray-700 text-violet-700 dark:text-violet-300 shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                 }`}
               >
                 Bill
@@ -413,12 +413,12 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ isOpen, onClose, editi
                       type="checkbox"
                       className="sr-only peer"
                     />
-                    <div className="w-10 h-6 bg-gray-200 rounded-full peer-checked:bg-indigo-600 transition-colors" />
+                    <div className="w-10 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-indigo-600 transition-colors" />
                     <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm peer-checked:translate-x-4 transition-transform" />
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">Autopay enabled</span>
-                    <p className="text-xs text-gray-400">This bill is automatically paid</p>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Autopay enabled</span>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">This bill is automatically paid</p>
                   </div>
                 </label>
               </div>
@@ -435,12 +435,12 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ isOpen, onClose, editi
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 mt-6 pt-5 border-t border-gray-100">
+          <div className="flex gap-3 mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
             >
               Cancel
             </button>

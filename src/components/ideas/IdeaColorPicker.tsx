@@ -47,25 +47,25 @@ export const IdeaColorPicker: React.FC<IdeaColorPickerProps> = ({ value, onChang
 
 // Map IdeaColor to Tailwind card background classes
 export const IDEA_COLOR_MAP: Record<IdeaColor, string> = {
-  default: 'bg-white',
-  red:     'bg-red-50',
-  orange:  'bg-orange-50',
-  yellow:  'bg-yellow-50',
-  green:   'bg-emerald-50',
-  teal:    'bg-teal-50',
-  blue:    'bg-blue-50',
-  purple:  'bg-purple-50',
-  pink:    'bg-pink-50',
+  default: 'bg-white dark:bg-gray-900',
+  red:     'bg-red-50 dark:bg-red-950/40',
+  orange:  'bg-orange-50 dark:bg-orange-950/40',
+  yellow:  'bg-yellow-50 dark:bg-yellow-950/30',
+  green:   'bg-emerald-50 dark:bg-emerald-950/40',
+  teal:    'bg-teal-50 dark:bg-teal-950/40',
+  blue:    'bg-blue-50 dark:bg-blue-950/40',
+  purple:  'bg-purple-50 dark:bg-purple-950/40',
+  pink:    'bg-pink-50 dark:bg-pink-950/40',
 };
 
 export const IDEA_BORDER_MAP: Record<IdeaColor, string> = {
-  default: 'border-gray-100',
-  red:     'border-red-100',
-  orange:  'border-orange-100',
-  yellow:  'border-yellow-100',
-  green:   'border-emerald-100',
-  teal:    'border-teal-100',
-  blue:    'border-blue-100',
-  purple:  'border-purple-100',
-  pink:    'border-pink-100',
+  default: 'border-gray-100 dark:border-gray-800',
+  red:     'border-red-100 dark:border-red-900/50',
+  orange:  'border-orange-100 dark:border-orange-900/50',
+  yellow:  'border-yellow-100 dark:border-yellow-900/50',
+  green:   'border-emerald-100 dark:border-emerald-900/50',
+  teal:    'border-teal-100 dark:border-teal-900/50',
+  blue:    'border-blue-100 dark:border-blue-900/50',
+  purple:  'border-purple-100 dark:border-purple-900/50',
+  pink:    'border-pink-100 dark:border-pink-900/50',
 };

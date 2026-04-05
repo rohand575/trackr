@@ -16,7 +16,7 @@ const countries: Country[] = ['Germany', 'India'];
 
 export const CountryTabs: React.FC<CountryTabsProps> = ({ activeCountry, onChange, counts }) => {
   return (
-    <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit">
+    <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit">
       {countries.map((country) => (
         <button
           key={country}
@@ -25,8 +25,8 @@ export const CountryTabs: React.FC<CountryTabsProps> = ({ activeCountry, onChang
             flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
             ${
               activeCountry === country
-                ? 'bg-white text-indigo-700 shadow-sm border border-gray-200/80'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/60'
+                ? 'bg-white dark:bg-gray-700 text-indigo-700 dark:text-indigo-300 shadow-sm border border-gray-200/80 dark:border-gray-600/50'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200/60 dark:hover:bg-gray-700/50'
             }
           `}
         >
@@ -37,8 +37,8 @@ export const CountryTabs: React.FC<CountryTabsProps> = ({ activeCountry, onChang
               inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-semibold
               ${
                 activeCountry === country
-                  ? 'bg-indigo-100 text-indigo-700'
-                  : 'bg-gray-200 text-gray-500'
+                  ? 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
               }
             `}
           >

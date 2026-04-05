@@ -26,10 +26,10 @@ const CATEGORY_ICONS: Record<string, string> = {
 };
 
 const STATUS_CONFIG = {
-  'Valid': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500', bar: 'border-emerald-200' },
-  'Expiring Soon': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500', bar: 'border-amber-300' },
-  'Expired': { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-500', bar: 'border-red-300' },
-  'No Expiry': { bg: 'bg-gray-50', text: 'text-gray-500', border: 'border-gray-200', dot: 'bg-gray-400', bar: 'border-gray-100' },
+  'Valid': { bg: 'bg-emerald-50 dark:bg-emerald-950/40', text: 'text-emerald-700 dark:text-emerald-300', border: 'border-emerald-200 dark:border-emerald-800/50', dot: 'bg-emerald-500', bar: 'border-emerald-200 dark:border-emerald-900' },
+  'Expiring Soon': { bg: 'bg-amber-50 dark:bg-amber-950/40', text: 'text-amber-700 dark:text-amber-300', border: 'border-amber-200 dark:border-amber-800/50', dot: 'bg-amber-500', bar: 'border-amber-300 dark:border-amber-900' },
+  'Expired': { bg: 'bg-red-50 dark:bg-red-950/40', text: 'text-red-700 dark:text-red-300', border: 'border-red-200 dark:border-red-800/50', dot: 'bg-red-500', bar: 'border-red-300 dark:border-red-900' },
+  'No Expiry': { bg: 'bg-gray-50 dark:bg-gray-800', text: 'text-gray-500 dark:text-gray-400', border: 'border-gray-200 dark:border-gray-700', dot: 'bg-gray-400', bar: 'border-gray-100 dark:border-gray-800' },
 };
 
 const COUNTRY_FLAGS: Record<string, string> = {
@@ -66,7 +66,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onEdit }) 
 
   return (
     <>
-      <div className={`group bg-white rounded-2xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${config.bar}`}>
+      <div className={`group bg-white dark:bg-gray-900 rounded-2xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${config.bar}`}>
         {/* Urgency top bar */}
         {(status === 'Expiring Soon' || status === 'Expired') && (
           <div className={`h-0.5 rounded-t-2xl ${status === 'Expired' ? 'bg-red-400' : 'bg-amber-400'}`} />
@@ -76,12 +76,12 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onEdit }) 
           {/* Header */}
           <div className="flex items-start justify-between gap-2 mb-4">
             <div className="flex items-start gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-xl shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center text-xl shrink-0">
                 {CATEGORY_ICONS[document.category] ?? '📄'}
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-gray-900 truncate">{document.name}</h3>
-                <p className="text-xs text-gray-500 truncate">
+                <h3 className="font-semibold text-gray-900 dark:text-white truncate">{document.name}</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                   {COUNTRY_FLAGS[document.country] ?? '🌍'} {document.country} · {document.category}
                 </p>
               </div>
@@ -99,14 +99,14 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onEdit }) 
           {/* Details */}
           <div className="space-y-2 mb-4">
             {document.issuer && (
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <svg className="w-3.5 h-3.5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg className="w-3.5 h-3.5 shrink-0 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                 <span className="truncate">{document.issuer}</span>
               </div>
             )}
             {document.documentNumber && (
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <svg className="w-3.5 h-3.5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" /></svg>
+              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg className="w-3.5 h-3.5 shrink-0 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" /></svg>
                 <span className="font-mono truncate">{document.documentNumber}</span>
               </div>
             )}
@@ -124,25 +124,25 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onEdit }) 
               </div>
             )}
             {document.storageLocation && (
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <svg className="w-3.5 h-3.5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg className="w-3.5 h-3.5 shrink-0 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
                 <span className="truncate">{document.storageLocation}</span>
               </div>
             )}
           </div>
 
           {/* Footer: status badge */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+          <div className="flex items-center justify-between pt-3 border-t border-gray-50 dark:border-gray-800">
             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${config.bg} ${config.text} ${config.border}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
               {status}
             </span>
             {document.issueDate && (
-              <span className="text-xs text-gray-400">Issued {formatDate(document.issueDate)}</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">Issued {formatDate(document.issueDate)}</span>
             )}
           </div>
 
-          {document.notes && <p className="mt-2 text-xs text-gray-400 italic truncate">{document.notes}</p>}
+          {document.notes && <p className="mt-2 text-xs text-gray-400 dark:text-gray-500 italic truncate">{document.notes}</p>}
         </div>
       </div>
 

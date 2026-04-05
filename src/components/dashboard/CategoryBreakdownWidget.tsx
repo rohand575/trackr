@@ -42,12 +42,12 @@ export const CategoryBreakdownWidget: React.FC<CategoryBreakdownWidgetProps> = (
   const isEmpty = !hasEUR && !hasINR;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5 flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Spend by Category</h2>
+        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Spend by Category</h2>
         {/* Tab toggle */}
         {!isEmpty && (
-          <div className="flex rounded-lg overflow-hidden border border-gray-200 text-xs">
+          <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 text-xs">
             {(['EUR', 'INR'] as const).map((c) => (
               <button
                 key={c}
@@ -56,7 +56,7 @@ export const CategoryBreakdownWidget: React.FC<CategoryBreakdownWidgetProps> = (
                 className={`px-3 py-1 font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
                   tab === c
                     ? 'bg-indigo-600 text-white'
-                    : 'text-gray-500 hover:bg-gray-50'
+                    : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`}
               >
                 {c === 'EUR' ? '€' : '₹'} {c}
@@ -67,11 +67,11 @@ export const CategoryBreakdownWidget: React.FC<CategoryBreakdownWidgetProps> = (
       </div>
 
       {isEmpty ? (
-        <div className="py-6 text-center text-gray-400 text-sm">
+        <div className="py-6 text-center text-gray-400 dark:text-gray-500 text-sm">
           No spending data yet
         </div>
       ) : breakdown.length === 0 ? (
-        <div className="py-6 text-center text-gray-400 text-sm">
+        <div className="py-6 text-center text-gray-400 dark:text-gray-500 text-sm">
           No {tab} spending data
         </div>
       ) : (
@@ -81,10 +81,10 @@ export const CategoryBreakdownWidget: React.FC<CategoryBreakdownWidgetProps> = (
               <span className="text-sm w-5 text-center shrink-0">
                 {CATEGORY_ICONS[item.category] ?? '📦'}
               </span>
-              <span className="text-xs text-gray-500 w-24 truncate shrink-0">
+              <span className="text-xs text-gray-500 dark:text-gray-400 w-24 truncate shrink-0">
                 {item.category}
               </span>
-              <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-700"
                   style={{
@@ -93,10 +93,10 @@ export const CategoryBreakdownWidget: React.FC<CategoryBreakdownWidgetProps> = (
                   }}
                 />
               </div>
-              <span className="text-xs font-semibold text-gray-700 w-20 text-right shrink-0 tabular-nums">
+              <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 w-20 text-right shrink-0 tabular-nums">
                 {formatCurrency(item.amount, currency)}
               </span>
-              <span className="text-xs text-gray-400 w-8 text-right shrink-0">
+              <span className="text-xs text-gray-400 dark:text-gray-500 w-8 text-right shrink-0">
                 {Math.round(item.percentage)}%
               </span>
             </div>

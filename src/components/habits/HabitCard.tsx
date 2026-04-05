@@ -104,7 +104,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit }) => {
 
   return (
     <>
-      <div className={`group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 ${habit.isArchived ? 'opacity-50' : ''}`}>
+      <div className={`group bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-200 ${habit.isArchived ? 'opacity-50' : ''}`}>
         <div className="p-5">
           {/* Header */}
           <div className="flex items-start justify-between gap-2 mb-4">
@@ -113,8 +113,8 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit }) => {
                 <span>{habit.icon}</span>
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-gray-900 truncate">{habit.name}</h3>
-                <p className="text-xs text-gray-500">{habit.category} · {habit.frequency}</p>
+                <h3 className="font-semibold text-gray-900 dark:text-white truncate">{habit.name}</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{habit.category} · {habit.frequency}</p>
               </div>
             </div>
             <div className="flex items-center gap-1 shrink-0">
@@ -138,7 +138,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit }) => {
                 const dow = new Date(date + 'T00:00:00').getDay();
                 return (
                   <div key={date} className="flex-1 text-center">
-                    <span className="text-[9px] text-gray-400">{DAY_LABELS[dow]}</span>
+                    <span className="text-[9px] text-gray-400 dark:text-gray-500">{DAY_LABELS[dow]}</span>
                   </div>
                 );
               })}
@@ -154,7 +154,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit }) => {
                       <div
                         key={date}
                         className={`flex-1 aspect-square rounded-md transition-all ${
-                          done ? '' : isToday ? 'bg-gray-100 border border-dashed border-gray-300' : 'bg-gray-50'
+                          done ? '' : isToday ? 'bg-gray-100 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600' : 'bg-gray-50 dark:bg-gray-800/50'
                         } ${done && isToday ? 'ring-2 ring-offset-1' : ''}`}
                         style={done ? { backgroundColor: habit.color + (isToday ? '' : 'cc'), ...(done && isToday ? { ringColor: habit.color } : {}) } : {}}
                         title={date}
@@ -169,23 +169,23 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit }) => {
           {/* Stats row */}
           <div className="flex items-center gap-3 mb-4">
             <div className="text-center">
-              <p className="text-base font-bold text-gray-900">{streak}</p>
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide">Streak</p>
+              <p className="text-base font-bold text-gray-900 dark:text-white">{streak}</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Streak</p>
             </div>
-            <div className="w-px h-7 bg-gray-100" />
+            <div className="w-px h-7 bg-gray-100 dark:bg-gray-700" />
             <div className="text-center">
-              <p className="text-base font-bold text-gray-900">{bestStreak}</p>
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide">Best</p>
+              <p className="text-base font-bold text-gray-900 dark:text-white">{bestStreak}</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Best</p>
             </div>
-            <div className="w-px h-7 bg-gray-100" />
+            <div className="w-px h-7 bg-gray-100 dark:bg-gray-700" />
             <div className="text-center">
-              <p className="text-base font-bold text-gray-900">{weekRate}%</p>
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide">This week</p>
+              <p className="text-base font-bold text-gray-900 dark:text-white">{weekRate}%</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">This week</p>
             </div>
-            <div className="w-px h-7 bg-gray-100" />
+            <div className="w-px h-7 bg-gray-100 dark:bg-gray-700" />
             <div className="text-center">
-              <p className="text-base font-bold text-gray-900">{habit.completions.length}</p>
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide">Total</p>
+              <p className="text-base font-bold text-gray-900 dark:text-white">{habit.completions.length}</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Total</p>
             </div>
           </div>
 
@@ -194,7 +194,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit }) => {
             onClick={handleToggleToday}
             className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
               isCompletedToday
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50 hover:bg-emerald-100 dark:hover:bg-emerald-950/60'
                 : 'text-white hover:opacity-90 shadow-sm'
             }`}
             style={isCompletedToday ? {} : { backgroundColor: habit.color }}
