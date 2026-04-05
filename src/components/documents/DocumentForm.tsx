@@ -6,6 +6,7 @@ import type { Document, DocumentFormData } from '../../types/documents';
 import { addDocument, updateDocument } from '../../services/documentsService';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useToastStore } from '../../store/useToastStore';
+import { useFoldersStore } from '../../store/useFoldersStore';
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -18,6 +19,7 @@ const schema = z.object({
   reminderDaysBefore: z.number().min(0).max(365),
   storageLocation: z.string().max(200),
   notes: z.string().max(500),
+  folderId: z.string().nullable().transform((v) => (v === '' ? null : v)),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -26,14 +28,16 @@ interface DocumentFormProps {
   isOpen: boolean;
   onClose: () => void;
   editingDocument?: Document | null;
+  defaultFolderId?: string | null;
 }
 
 const inputClass = 'w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors';
 const selectClass = 'w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors appearance-none cursor-pointer';
 
-export const DocumentForm: React.FC<DocumentFormProps> = ({ isOpen, onClose, editingDocument }) => {
+export const DocumentForm: React.FC<DocumentFormProps> = ({ isOpen, onClose, editingDocument, defaultFolderId }) => {
   const { user } = useAuthStore();
   const { addToast } = useToastStore();
+  const { folders } = useFoldersStore();
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(schema) as Resolver<FormValues>,
@@ -41,6 +45,7 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({ isOpen, onClose, edi
       name: '', category: 'Identity', issuer: '', country: 'Germany',
       documentNumber: '', issueDate: '', expiryDate: '',
       reminderDaysBefore: 30, storageLocation: '', notes: '',
+      folderId: defaultFolderId ?? '',
     },
   });
 
@@ -54,9 +59,10 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({ isOpen, onClose, edi
         issueDate: editingDocument.issueDate, expiryDate: editingDocument.expiryDate,
         reminderDaysBefore: editingDocument.reminderDaysBefore,
         storageLocation: editingDocument.storageLocation, notes: editingDocument.notes,
+        folderId: editingDocument.folderId ?? '',
       });
     } else {
-      reset({ name: '', category: 'Identity', issuer: '', country: 'Germany', documentNumber: '', issueDate: '', expiryDate: '', reminderDaysBefore: 30, storageLocation: '', notes: '' });
+      reset({ name: '', category: 'Identity', issuer: '', country: 'Germany', documentNumber: '', issueDate: '', expiryDate: '', reminderDaysBefore: 30, storageLocation: '', notes: '', folderId: defaultFolderId ?? '' });
     }
   }, [editingDocument, isOpen, reset]);
 
@@ -120,6 +126,19 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({ isOpen, onClose, edi
                   <option value="Germany">🇩🇪 Germany</option>
                   <option value="India">🇮🇳 India</option>
                   <option value="Other">🌍 Other</option>
+                </select>
+                <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+              </div>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Folder</label>
+              <div className="relative">
+                <select {...register('folderId')} className={selectClass}>
+                  <option value="">No folder (Unfiled)</option>
+                  {folders.map((f) => (
+                    <option key={f.id} value={f.id}>{f.name}</option>
+                  ))}
                 </select>
                 <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
               </div>

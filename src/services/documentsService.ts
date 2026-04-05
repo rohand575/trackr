@@ -40,6 +40,7 @@ const toDocument = (id: string, d: Record<string, unknown>): Document => ({
   reminderDaysBefore: (d.reminderDaysBefore as number) ?? 30,
   storageLocation: (d.storageLocation as string) ?? '',
   notes: (d.notes as string) ?? '',
+  folderId: (d.folderId as string | null | undefined) ?? null,
   createdAt:
     d.createdAt instanceof Timestamp
       ? d.createdAt.toDate().toISOString()

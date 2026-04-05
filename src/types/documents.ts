@@ -25,7 +25,17 @@ export interface Document {
   reminderDaysBefore: number; // 0 = no reminder, else n days before expiry
   storageLocation: string;  // e.g. "Google Drive > Documents", "Physical - Blue folder"
   notes: string;
+  folderId: string | null;
   createdAt: string;
 }
 
 export type DocumentFormData = Omit<Document, 'id' | 'userId' | 'createdAt'>;
+
+export interface DocumentFolder {
+  id: string;
+  userId: string;
+  name: string;
+  createdAt: string;
+}
+
+export type DocumentFolderFormData = Pick<DocumentFolder, 'name'>;
