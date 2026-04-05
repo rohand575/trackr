@@ -14,16 +14,25 @@ import { Toast } from './components/Toast';
 import { BiometricLock } from './components/BiometricLock';
 import { QuickCapture } from './components/QuickCapture';
 import { LoadingSpinner } from './components/LoadingSpinner';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { useAuth } from './hooks/useAuth';
 import { useBiometric } from './hooks/useBiometric';
 import { usePaymentsStore } from './store/usePaymentsStore';
 import { useHabitsStore } from './store/useHabitsStore';
+import { useAuthStore } from './store/useAuthStore';
 import { useHabitReminders } from './hooks/useHabitReminders';
 import {
   createRenewalChannel,
   requestNotificationPermission,
   scheduleRenewalNotifications,
 } from './services/localNotifications';
+import {
+  createHabitCheckInChannel,
+  registerHabitCheckInActions,
+  scheduleHabitCheckIns,
+  HABIT_DONE_ACTION_ID,
+} from './services/habitCheckInService';
+import { markHabitComplete } from './services/habitsService';
 
 // ---------------------------------------------------------------------------
 // Deep link handler — must live inside <BrowserRouter> to access useNavigate.
@@ -61,11 +70,14 @@ const DeepLinkHandler: React.FC = () => {
 const NotificationManager: React.FC = () => {
   const { payments } = usePaymentsStore();
   const { habits } = useHabitsStore();
+  const { user } = useAuthStore();
   const subscriptions = payments.filter((p) => p.type === 'subscription');
 
   useEffect(() => {
-    // One-time setup: create Android channel + ask for permission
+    // One-time setup: create Android channels + register action types + ask for permission
     createRenewalChannel();
+    createHabitCheckInChannel();
+    registerHabitCheckInActions();
     requestNotificationPermission();
   }, []);
 
@@ -76,7 +88,33 @@ const NotificationManager: React.FC = () => {
     }
   }, [subscriptions]);
 
-  // Browser push notifications for habit reminders
+  // Schedule / reschedule daily 21:30 check-ins whenever the habits list changes.
+  useEffect(() => {
+    scheduleHabitCheckIns(habits);
+  }, [habits]);
+
+  // Handle "Done ✓" button taps — marks the habit complete in Firestore.
+  // Re-registers whenever user changes so the closure always has the current uid.
+  useEffect(() => {
+    const listenerPromise = LocalNotifications.addListener(
+      'localNotificationActionPerformed',
+      async (action) => {
+        if (action.actionId !== HABIT_DONE_ACTION_ID) return;
+        const extra = action.notification.extra as { habitId?: string; notificationType?: string } | null;
+        if (extra?.notificationType !== 'habit-checkin' || !extra?.habitId) return;
+        if (!user) return;
+        const today = new Date().toISOString().split('T')[0];
+        try {
+          await markHabitComplete(user.uid, extra.habitId, today);
+        } catch (err) {
+          console.warn('[NotificationManager] markHabitComplete failed:', err);
+        }
+      },
+    );
+    return () => { listenerPromise.then((l) => l.remove()); };
+  }, [user]);
+
+  // Browser/web fallback: fires when the app is open in a browser tab.
   useHabitReminders(habits);
 
   return null;
