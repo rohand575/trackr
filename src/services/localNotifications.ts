@@ -7,7 +7,7 @@ const RENEWAL_ID_START = 1000;
 const RENEWAL_ID_END = 1999;
 
 // Notification channel for Android (required on Android 8+)
-const CHANNEL_ID = 'renewals';
+const CHANNEL_ID = 'renewals-v2';
 
 /**
  * Creates the Android notification channel for renewal reminders.
@@ -23,6 +23,7 @@ export const createRenewalChannel = async () => {
       importance: 4, // HIGH
       visibility: 1, // PUBLIC
       vibration: true,
+      sound: 'default',
     });
   } catch {
     // Channel creation is only needed on Android — silently ignore on web/iOS
@@ -96,6 +97,7 @@ export const scheduleRenewalNotifications = async (subscriptions: Subscription[]
           id: idCounter++,
           title,
           body,
+          sound: 'default',
           channelId: CHANNEL_ID,
           schedule: { at: scheduleAt },
           // Extra data available if the app handles notification tap events

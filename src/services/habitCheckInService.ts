@@ -5,7 +5,7 @@ import type { Habit } from '../types/habits';
 const CHECKIN_ID_START = 2000;
 const CHECKIN_ID_END = 2999;
 
-export const HABIT_CHECKIN_CHANNEL_ID = 'habit-checkins';
+export const HABIT_CHECKIN_CHANNEL_ID = 'habit-checkins-v2';
 export const HABIT_CHECKIN_ACTION_TYPE = 'HABIT_CHECKIN';
 export const HABIT_DONE_ACTION_ID = 'DONE';
 
@@ -18,10 +18,11 @@ export const createHabitCheckInChannel = async () => {
     await LocalNotifications.createChannel({
       id: HABIT_CHECKIN_CHANNEL_ID,
       name: 'Habit Check-ins',
-      description: 'Daily 21:30 reminders to log your habits',
+      description: 'Daily reminders to log your habits',
       importance: 4, // HIGH
       visibility: 1, // PUBLIC
       vibration: true,
+      sound: 'default',
     });
   } catch { /* no-op on iOS / web */ }
 };
@@ -81,6 +82,7 @@ export const scheduleHabitCheckIns = async (habits: Habit[]) => {
         id: CHECKIN_ID_START + index,
         title: `${habit.icon} ${habit.name}`,
         body: 'Did you complete this today?',
+        sound: 'default',
         channelId: HABIT_CHECKIN_CHANNEL_ID,
         actionTypeId: HABIT_CHECKIN_ACTION_TYPE,
         schedule: {
