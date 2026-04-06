@@ -5,6 +5,7 @@ import { useGoalsStore } from '../store/useGoalsStore';
 import { useHabitsStore } from '../store/useHabitsStore';
 import { useDocumentsStore } from '../store/useDocumentsStore';
 import { useIdeasStore } from '../store/useIdeasStore';
+import { useIdeas } from '../hooks/useIdeas';
 
 interface SearchResult {
   id: string;
@@ -41,6 +42,9 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) =
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Ensure ideas are subscribed globally (not just when Ideas page is mounted)
+  useIdeas();
 
   const { payments } = usePaymentsStore();
   const { goals } = useGoalsStore();
