@@ -9,9 +9,11 @@ interface IdeaFormProps {
   isOpen: boolean;
   onClose: () => void;
   editingIdea?: Idea | null;
+  section?: 'ideas' | 'documents';
+  documentFolderId?: string | null;
 }
 
-export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea }) => {
+export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea, section = 'ideas', documentFolderId = null }) => {
   const { user } = useAuthStore();
   const { addToast } = useToastStore();
   const [title, setTitle] = useState('');
@@ -24,6 +26,19 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+
+  const resizeBody = () => {
+    const el = bodyRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.max(el.scrollHeight, 96)}px`;
+  };
+
+  useEffect(() => {
+    resizeBody();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [body, isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -67,6 +82,8 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
         isArchived: editingIdea?.isArchived ?? false,
         tags,
         kanbanStatus: editingIdea?.kanbanStatus ?? 'todo',
+        section: editingIdea?.section ?? section,
+        documentFolderId: editingIdea?.documentFolderId ?? documentFolderId,
       };
       if (editingIdea) {
         await updateIdea(user.uid, editingIdea.id, formData);
@@ -138,7 +155,7 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
         </button>
 
         {/* Scrollable content area */}
-        <div className="flex-1 overflow-y-auto p-6 pt-5 flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto p-6 pt-5">
           {/* Title */}
           <input
             ref={titleRef}
@@ -149,12 +166,14 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
             className="w-full bg-transparent text-base font-semibold text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none pr-8"
           />
 
-          {/* Body — grows to fill space */}
+          {/* Body — auto-resizes with content */}
           <textarea
+            ref={bodyRef}
             value={body}
-            onChange={(e) => setBody(e.target.value)}
+            onChange={(e) => { setBody(e.target.value); resizeBody(); }}
             placeholder="Take a note..."
-            className="w-full flex-1 bg-transparent text-sm text-gray-600 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none resize-none mt-3 leading-relaxed"
+            className="w-full bg-transparent text-sm text-gray-600 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none resize-none mt-3 leading-relaxed block"
+            style={{ minHeight: '96px' }}
           />
 
           {/* Checklist items */}

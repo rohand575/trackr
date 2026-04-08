@@ -4,10 +4,14 @@ import { DocumentCard } from '../components/documents/DocumentCard';
 import { DocumentForm } from '../components/documents/DocumentForm';
 import { FolderSidebar, type SidebarView } from '../components/documents/FolderSidebar';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { IdeaForm } from '../components/ideas/IdeaForm';
+import { IdeaCard } from '../components/ideas/IdeaCard';
 import { useDocuments } from '../hooks/useDocuments';
 import { useFolders } from '../hooks/useFolders';
+import { useIdeas } from '../hooks/useIdeas';
 import { getDocumentStatus } from '../services/documentsService';
 import type { Document, DocumentCategory, DocumentStatus } from '../types/documents';
+import type { Idea } from '../types/ideas';
 
 type FilterStatus = DocumentStatus | 'All';
 type FilterCategory = DocumentCategory | 'All';
@@ -54,16 +58,29 @@ const EmptyDocuments: React.FC<{ onAdd: () => void }> = ({ onAdd }) => (
 export const DocumentVault: React.FC = () => {
   const { documents, loading: docsLoading } = useDocuments();
   const { folders, loading: foldersLoading } = useFolders();
+  const { ideas } = useIdeas();
 
   const loading = docsLoading || foldersLoading;
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingDocument, setEditingDocument] = useState<Document | null>(null);
+  const [noteFormOpen, setNoteFormOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<Idea | null>(null);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('All');
   const [filterCategory, setFilterCategory] = useState<FilterCategory>('All');
   const [selectedView, setSelectedView] = useState<SidebarView>('all');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Notes scoped to the current view (folder-aware)
+  const documentNotes = useMemo(() => {
+    const all = ideas.filter((i) => i.section === 'documents' && !i.isArchived);
+    if (selectedView === 'all') return all;
+    // Smart views (expiring/expired/unfiled) don't show notes
+    if (['expiring', 'expired', 'unfiled'].includes(selectedView)) return [];
+    // Specific folder: only notes directly in that folder
+    return all.filter((n) => n.documentFolderId === selectedView);
+  }, [ideas, selectedView]);
 
   const knownFolderIds = useMemo(() => new Set(folders.map((f) => f.id)), [folders]);
 
@@ -125,14 +142,13 @@ export const DocumentVault: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-200">
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-950 transition-colors duration-200 overflow-hidden">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 sm:pb-10">
-        <div className="flex gap-5 items-start">
-
-          {/* Folder sidebar */}
-          {!sidebarCollapsed && (
+      <div className="flex flex-1 min-h-0">
+        {/* ── Collapsible sidebar panel ── */}
+        {!sidebarCollapsed && (
+          <aside className="hidden sm:flex w-56 shrink-0 flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 overflow-hidden">
             <FolderSidebar
               selectedView={selectedView}
               onSelectView={handleViewChange}
@@ -141,25 +157,25 @@ export const DocumentVault: React.FC = () => {
               collapsed={sidebarCollapsed}
               onCollapse={() => setSidebarCollapsed(true)}
             />
-          )}
+          </aside>
+        )}
 
-          {/* Main content */}
-          <div className="flex-1 min-w-0">
+        {/* ── Main content ── */}
+        <div className="flex-1 min-w-0 overflow-y-auto">
+          <div className="px-6 py-6 pb-24 sm:pb-10 max-w-6xl">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                {/* Expand sidebar button when collapsed */}
-                {sidebarCollapsed && (
-                  <button
-                    onClick={() => setSidebarCollapsed(false)}
-                    title="Show folders"
-                    className="p-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                )}
+                {/* Always-visible sidebar toggle */}
+                <button
+                  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                  title={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+                  className="hidden sm:flex p-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                  </svg>
+                </button>
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{viewLabel}</h1>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
@@ -169,15 +185,24 @@ export const DocumentVault: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() => setFormOpen(true)}
-                className="hidden sm:flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors shadow-sm shadow-indigo-200"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                </svg>
-                Add Document
-              </button>
+              <div className="hidden sm:flex items-center gap-2">
+                <button
+                  onClick={() => setNoteFormOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-xl transition-colors"
+                >
+                  <span className="text-base leading-none">💡</span>
+                  Add Note
+                </button>
+                <button
+                  onClick={() => setFormOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors shadow-sm shadow-indigo-200"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add Document
+                </button>
+              </div>
             </div>
 
             {/* Filters */}
@@ -234,6 +259,30 @@ export const DocumentVault: React.FC = () => {
               </div>
             )}
 
+            {/* Notes section */}
+            {documentNotes.length > 0 && (
+              <div className="mb-8">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Notes</span>
+                </div>
+                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
+                  {documentNotes.map((note) => {
+                    const badge = selectedView === 'all' && note.documentFolderId
+                      ? folders.find((f) => f.id === note.documentFolderId)?.name
+                      : undefined;
+                    return (
+                      <IdeaCard
+                        key={note.id}
+                        idea={note}
+                        onEdit={(n) => { setEditingNote(n); setNoteFormOpen(true); }}
+                        folderBadge={badge}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Content */}
             {loading ? (
               <div className="flex justify-center py-20"><LoadingSpinner size="lg" /></div>
@@ -273,23 +322,41 @@ export const DocumentVault: React.FC = () => {
             )}
           </div>
         </div>
-      </main>
+      </div>
 
-      {/* Mobile FAB */}
-      <button
-        onClick={() => setFormOpen(true)}
-        className="sm:hidden fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-xl shadow-indigo-300 flex items-center justify-center transition-all z-20"
-      >
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-        </svg>
-      </button>
+      {/* Mobile FABs */}
+      <div className="sm:hidden fixed bottom-6 right-6 flex flex-col items-center gap-3 z-20">
+        <button
+          onClick={() => setNoteFormOpen(true)}
+          className="w-12 h-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-xl rounded-full shadow-lg hover:shadow-xl flex items-center justify-center transition-all"
+          title="Add note"
+        >
+          💡
+        </button>
+        <button
+          onClick={() => setFormOpen(true)}
+          className="w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-xl shadow-indigo-300 flex items-center justify-center transition-all"
+          title="Add document"
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      </div>
 
       <DocumentForm
         isOpen={formOpen}
         onClose={() => { setFormOpen(false); setEditingDocument(null); }}
         editingDocument={editingDocument}
         defaultFolderId={defaultFolderId}
+      />
+
+      <IdeaForm
+        isOpen={noteFormOpen}
+        onClose={() => { setNoteFormOpen(false); setEditingNote(null); }}
+        editingIdea={editingNote}
+        section="documents"
+        documentFolderId={isSmartView ? null : selectedView}
       />
     </div>
   );

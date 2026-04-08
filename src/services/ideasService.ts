@@ -34,6 +34,8 @@ const toIdea = (id: string, d: Record<string, unknown>): Idea => ({
   updatedAt: tsToIso(d.updatedAt),
   tags: (d.tags as string[]) ?? [],
   kanbanStatus: (d.kanbanStatus as IdeaKanbanStatus) ?? 'todo',
+  section: (d.section as 'ideas' | 'documents') ?? 'ideas',
+  documentFolderId: (d.documentFolderId as string | null) ?? null,
 });
 
 export const addIdea = async (userId: string, data: IdeaFormData): Promise<string> => {

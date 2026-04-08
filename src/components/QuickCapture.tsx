@@ -55,6 +55,8 @@ export const QuickCapture: React.FC = () => {
         isArchived: false,
         tags: [],
         kanbanStatus: 'todo',
+        section: 'ideas',
+        documentFolderId: null,
       });
       addToast('Idea captured!', 'success');
       handleClose();

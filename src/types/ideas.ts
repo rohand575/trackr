@@ -30,6 +30,8 @@ export interface Idea {
   updatedAt: string;
   tags: string[];
   kanbanStatus: IdeaKanbanStatus;
+  section: 'ideas' | 'documents';
+  documentFolderId: string | null;
 }
 
 export type IdeaFormData = Omit<Idea, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;

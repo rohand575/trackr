@@ -20,6 +20,7 @@ const toFolder = (id: string, d: Record<string, unknown>): DocumentFolder => ({
   id,
   userId: d.userId as string,
   name: d.name as string,
+  parentId: (d.parentId as string | null) ?? null,
   createdAt:
     d.createdAt instanceof Timestamp
       ? d.createdAt.toDate().toISOString()

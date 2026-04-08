@@ -9,9 +9,10 @@ import { IdeaColorPicker, IDEA_COLOR_MAP, IDEA_BORDER_MAP } from './IdeaColorPic
 interface IdeaCardProps {
   idea: Idea;
   onEdit: (idea: Idea) => void;
+  folderBadge?: string;
 }
 
-export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onEdit }) => {
+export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onEdit, folderBadge }) => {
   const { user } = useAuthStore();
   const { addToast } = useToastStore();
   const [showConfirm, setShowConfirm] = useState(false);
@@ -148,6 +149,18 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onEdit }) => {
           {showColorPicker && (
             <div onClick={(e) => e.stopPropagation()} className="mt-3 pt-3 border-t border-gray-200/60 dark:border-gray-700/60">
               <IdeaColorPicker value={idea.color} onChange={handleColorChange} size="sm" />
+            </div>
+          )}
+
+          {/* Folder badge */}
+          {folderBadge && (
+            <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 mt-2">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                <svg className="w-2.5 h-2.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+                </svg>
+                {folderBadge}
+              </span>
             </div>
           )}
 

@@ -1,12 +1,27 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { Document, DocumentFormData } from '../../types/documents';
+import type { Document, DocumentFolder, DocumentFormData } from '../../types/documents';
 import { addDocument, updateDocument } from '../../services/documentsService';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useToastStore } from '../../store/useToastStore';
 import { useFoldersStore } from '../../store/useFoldersStore';
+
+function buildFolderOptions(folders: DocumentFolder[]): { folder: DocumentFolder; depth: number }[] {
+  const knownIds = new Set(folders.map((f) => f.id));
+  const result: { folder: DocumentFolder; depth: number }[] = [];
+  function traverse(parentId: string | null, depth: number) {
+    folders
+      .filter((f) => (f.parentId && knownIds.has(f.parentId) ? f.parentId : null) === parentId)
+      .forEach((folder) => {
+        result.push({ folder, depth });
+        traverse(folder.id, depth + 1);
+      });
+  }
+  traverse(null, 0);
+  return result;
+}
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -38,6 +53,7 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({ isOpen, onClose, edi
   const { user } = useAuthStore();
   const { addToast } = useToastStore();
   const { folders } = useFoldersStore();
+  const folderOptions = useMemo(() => buildFolderOptions(folders), [folders]);
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(schema) as Resolver<FormValues>,
@@ -136,8 +152,10 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({ isOpen, onClose, edi
               <div className="relative">
                 <select {...register('folderId')} className={selectClass}>
                   <option value="">No folder (Unfiled)</option>
-                  {folders.map((f) => (
-                    <option key={f.id} value={f.id}>{f.name}</option>
+                  {folderOptions.map(({ folder, depth }) => (
+                    <option key={folder.id} value={folder.id}>
+                      {'\u00a0\u00a0'.repeat(depth * 2)}{depth > 0 ? '└ ' : ''}{folder.name}
+                    </option>
                   ))}
                 </select>
                 <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>

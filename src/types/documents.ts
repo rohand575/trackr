@@ -35,7 +35,8 @@ export interface DocumentFolder {
   id: string;
   userId: string;
   name: string;
+  parentId: string | null;
   createdAt: string;
 }
 
-export type DocumentFolderFormData = Pick<DocumentFolder, 'name'>;
+export type DocumentFolderFormData = Pick<DocumentFolder, 'name' | 'parentId'>;

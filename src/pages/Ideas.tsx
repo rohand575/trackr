@@ -29,16 +29,17 @@ export const Ideas: React.FC = () => {
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
-  // Collect all unique tags across non-archived ideas
+  // Collect all unique tags across non-archived ideas (exclude document notes)
   const allTags = useMemo(() => {
     const set = new Set<string>();
-    ideas.filter((i) => !i.isArchived).forEach((i) => (i.tags ?? []).forEach((t) => set.add(t)));
+    ideas.filter((i) => !i.isArchived && i.section !== 'documents').forEach((i) => (i.tags ?? []).forEach((t) => set.add(t)));
     return Array.from(set).sort();
   }, [ideas]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return ideas.filter((idea) => {
+      if (idea.section === 'documents') return false;
       if (q && !(
         idea.title.toLowerCase().includes(q) ||
         idea.body.toLowerCase().includes(q) ||
@@ -53,7 +54,7 @@ export const Ideas: React.FC = () => {
   const pinned   = filtered.filter((i) => i.pinned && !i.isArchived);
   const unpinned = filtered.filter((i) => !i.pinned && !i.isArchived);
   const archived = filtered.filter((i) => i.isArchived);
-  const activeCount = ideas.filter((i) => !i.isArchived).length;
+  const activeCount = ideas.filter((i) => !i.isArchived && i.section !== 'documents').length;
 
   const handleEdit = (idea: Idea) => { setEditingIdea(idea); setFormOpen(true); };
   const handleClose = () => { setFormOpen(false); setEditingIdea(null); };
