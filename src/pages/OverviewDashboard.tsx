@@ -57,18 +57,18 @@ export const OverviewDashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Row 1: Financial burn + Upcoming payments */}
           <MonthlyBurnWidget data={data} />
-          <div className="md:col-span-1 lg:col-span-2">
+          <div className="lg:col-span-2">
             <UpcomingPaymentsWidget data={data} />
           </div>
 
           {/* Row 2: Category breakdown + Goals */}
-          <div className="md:col-span-2">
+          <div className="lg:col-span-2">
             <CategoryBreakdownWidget data={data} />
           </div>
           <GoalsWidget data={data} />
 
           {/* Row 3: Habits today + Documents */}
-          <div className="md:col-span-2">
+          <div className="lg:col-span-2">
             <HabitsTodayWidget data={data} />
           </div>
           <DocumentsExpiryWidget data={data} />

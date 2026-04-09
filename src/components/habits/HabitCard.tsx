@@ -59,6 +59,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit }) => {
   const { addToast } = useToastStore();
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [compactView, setCompactView] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
   const last28 = getLast28Days();
@@ -130,24 +131,35 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit }) => {
             </div>
           </div>
 
-          {/* 28-day heatmap */}
+          {/* Heatmap */}
           <div className="mb-4">
-            {/* Day-of-week labels (aligned to first week's days) */}
-            <div className="flex gap-1 mb-1">
-              {weeks[0].map((date) => {
-                const dow = new Date(date + 'T00:00:00').getDay();
-                return (
-                  <div key={date} className="flex-1 text-center">
-                    <span className="text-[9px] text-gray-400 dark:text-gray-500">{DAY_LABELS[dow]}</span>
-                  </div>
-                );
-              })}
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                {compactView ? 'Last 7 days' : 'Last 28 days'}
+              </span>
+              <button
+                onClick={() => setCompactView((v) => !v)}
+                className="text-[10px] font-medium text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+              >
+                {compactView ? '28d' : '7d'}
+              </button>
             </div>
-            {/* 4 weeks of cells */}
-            <div className="flex flex-col gap-1">
-              {weeks.map((week, wi) => (
-                <div key={wi} className="flex gap-1">
-                  {week.map((date) => {
+
+            {compactView ? (
+              /* Compact 7-day row */
+              <div>
+                <div className="flex gap-1 mb-1">
+                  {last7.map((date) => {
+                    const dow = new Date(date + 'T00:00:00').getDay();
+                    return (
+                      <div key={date} className="flex-1 text-center">
+                        <span className="text-[9px] text-gray-400 dark:text-gray-500">{DAY_LABELS[dow]}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex gap-1">
+                  {last7.map((date) => {
                     const done = habit.completions.includes(date);
                     const isToday = date === today;
                     return (
@@ -155,15 +167,49 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit }) => {
                         key={date}
                         className={`flex-1 aspect-square rounded-md transition-all ${
                           done ? '' : isToday ? 'bg-gray-100 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600' : 'bg-gray-50 dark:bg-gray-800/50'
-                        } ${done && isToday ? 'ring-2 ring-offset-1' : ''}`}
-                        style={done ? { backgroundColor: habit.color + (isToday ? '' : 'cc'), ...(done && isToday ? { ringColor: habit.color } : {}) } : {}}
+                        }`}
+                        style={done ? { backgroundColor: habit.color + (isToday ? '' : 'cc') } : {}}
                         title={date}
                       />
                     );
                   })}
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              /* Full 28-day grid */
+              <div>
+                <div className="flex gap-1 mb-1">
+                  {weeks[0].map((date) => {
+                    const dow = new Date(date + 'T00:00:00').getDay();
+                    return (
+                      <div key={date} className="flex-1 text-center">
+                        <span className="text-[9px] text-gray-400 dark:text-gray-500">{DAY_LABELS[dow]}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex flex-col gap-1">
+                  {weeks.map((week, wi) => (
+                    <div key={wi} className="flex gap-1">
+                      {week.map((date) => {
+                        const done = habit.completions.includes(date);
+                        const isToday = date === today;
+                        return (
+                          <div
+                            key={date}
+                            className={`flex-1 aspect-square rounded-md transition-all ${
+                              done ? '' : isToday ? 'bg-gray-100 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600' : 'bg-gray-50 dark:bg-gray-800/50'
+                            } ${done && isToday ? 'ring-2 ring-offset-1' : ''}`}
+                            style={done ? { backgroundColor: habit.color + (isToday ? '' : 'cc'), ...(done && isToday ? { ringColor: habit.color } : {}) } : {}}
+                            title={date}
+                          />
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Stats row */}

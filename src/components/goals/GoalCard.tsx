@@ -31,6 +31,8 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
   const [addingMilestone, setAddingMilestone] = useState(false);
   const [progressInput, setProgressInput] = useState('');
   const [editingProgress, setEditingProgress] = useState(false);
+  const [loggingDelta, setLoggingDelta] = useState(false);
+  const [deltaInput, setDeltaInput] = useState('');
 
   const progress = goal.targetValue > 0 ? Math.min((goal.currentValue / goal.targetValue) * 100, 100) : 0;
   const daysLeft = Math.ceil((new Date(goal.deadline + 'T00:00:00').getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -56,6 +58,17 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
     addToast('Progress updated', 'success');
     setEditingProgress(false);
     setProgressInput('');
+  };
+
+  const handleDeltaLog = async () => {
+    if (!user) return;
+    const delta = parseFloat(deltaInput);
+    if (isNaN(delta) || delta === 0) return;
+    const newValue = Math.max(0, goal.currentValue + delta);
+    await updateGoal(user.uid, goal.id, { currentValue: newValue });
+    addToast(`+${delta} ${goal.unit} logged`, 'success');
+    setLoggingDelta(false);
+    setDeltaInput('');
   };
 
   const handleToggleMilestone = async (m: Milestone) => {
@@ -229,18 +242,50 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
             </div>
           )}
 
+          {/* Quick delta log form */}
+          {loggingDelta && (
+            <div className="mb-3 pt-3 border-t border-gray-50 dark:border-gray-800">
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-wider font-semibold">Log progress</p>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 shrink-0">+</span>
+                <input
+                  type="number"
+                  value={deltaInput}
+                  onChange={(e) => setDeltaInput(e.target.value)}
+                  placeholder={`Amount in ${goal.unit || 'units'}`}
+                  className="flex-1 px-2.5 py-1.5 text-xs border border-indigo-300 dark:border-indigo-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleDeltaLog(); if (e.key === 'Escape') { setLoggingDelta(false); setDeltaInput(''); } }}
+                  autoFocus
+                />
+                <button onClick={handleDeltaLog} className="shrink-0 text-xs text-white bg-indigo-600 hover:bg-indigo-700 px-2.5 py-1.5 rounded-lg transition-colors">Add</button>
+                <button onClick={() => { setLoggingDelta(false); setDeltaInput(''); }} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-1 py-1.5">✕</button>
+              </div>
+            </div>
+          )}
+
           {/* Footer */}
           <div className="flex items-center justify-between pt-3 border-t border-gray-50 dark:border-gray-800">
             <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${STATUS_STYLES[goal.status]}`}>
               {goal.status}
             </span>
-            <button
-              onClick={() => setAddingMilestone(true)}
-              className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-              Milestone
-            </button>
+            <div className="flex items-center gap-3">
+              {goal.status === 'Active' && !loggingDelta && (
+                <button
+                  onClick={() => { setLoggingDelta(true); setAddingMilestone(false); }}
+                  className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                  Log
+                </button>
+              )}
+              <button
+                onClick={() => { setAddingMilestone(true); setLoggingDelta(false); }}
+                className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                Milestone
+              </button>
+            </div>
           </div>
 
           {goal.description && <p className="mt-2 text-xs text-gray-400 dark:text-gray-500 italic">{goal.description}</p>}

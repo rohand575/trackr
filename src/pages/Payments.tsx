@@ -6,10 +6,36 @@ import { PaymentForm } from '../components/PaymentForm';
 import { PaymentSearchFilter } from '../components/PaymentSearchFilter';
 import { PaymentSummaryBar } from '../components/PaymentSummaryBar';
 import { EmptyState } from '../components/EmptyState';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { usePayments } from '../hooks/usePayments';
 import { usePaymentsStore } from '../store/usePaymentsStore';
 import type { PaymentItem, Country } from '../types/payment';
+
+const PAGE_SIZE = 12;
+
+const PaymentCardSkeleton = () => (
+  <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5 animate-pulse">
+    <div className="flex items-start justify-between gap-3 mb-4">
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 shrink-0" />
+        <div>
+          <div className="h-4 w-28 bg-gray-100 dark:bg-gray-800 rounded-md mb-2" />
+          <div className="h-3 w-20 bg-gray-100 dark:bg-gray-800 rounded-md" />
+        </div>
+      </div>
+    </div>
+    <div className="mb-4">
+      <div className="h-7 w-24 bg-gray-100 dark:bg-gray-800 rounded-md" />
+    </div>
+    <div className="grid grid-cols-2 gap-2 mb-4">
+      <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-md" />
+      <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-md col-span-2" />
+    </div>
+    <div className="flex items-center justify-between pt-3 border-t border-gray-50 dark:border-gray-800">
+      <div className="h-5 w-16 bg-gray-100 dark:bg-gray-800 rounded-full" />
+      <div className="h-5 w-24 bg-gray-100 dark:bg-gray-800 rounded-full" />
+    </div>
+  </div>
+);
 
 export const Payments: React.FC = () => {
   const { payments, filters, loading } = usePayments();
@@ -18,10 +44,12 @@ export const Payments: React.FC = () => {
   const [country, setCountry] = useState<Country>('Germany');
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<PaymentItem | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const handleAdd = () => { setEditingItem(null); setFormOpen(true); };
   const handleEdit = (item: PaymentItem) => { setEditingItem(item); setFormOpen(true); };
   const handleClose = () => { setFormOpen(false); setEditingItem(null); };
+  const handleCountryChange = (c: Country) => { setCountry(c); resetFilters(); setVisibleCount(PAGE_SIZE); };;
 
   const countryCounts = useMemo(() => {
     const active = payments.filter((p) => p.status !== 'Cancelled');
@@ -91,8 +119,8 @@ export const Payments: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-20">
-            <LoadingSpinner size="lg" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => <PaymentCardSkeleton key={i} />)}
           </div>
         ) : (
           <>
@@ -105,7 +133,7 @@ export const Payments: React.FC = () => {
             <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
               <CountryTabs
                 activeCountry={country}
-                onChange={(c) => { setCountry(c); resetFilters(); }}
+                onChange={handleCountryChange}
                 counts={countryCounts}
               />
             </div>
@@ -117,11 +145,26 @@ export const Payments: React.FC = () => {
             {filtered.length === 0 ? (
               <EmptyState hasFilters={hasActiveFilters} onAddClick={handleAdd} />
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {filtered.map((item) => (
-                  <PaymentCard key={item.id} item={item} onEdit={handleEdit} />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {filtered.slice(0, visibleCount).map((item) => (
+                    <PaymentCard key={item.id} item={item} onEdit={handleEdit} />
+                  ))}
+                </div>
+                {filtered.length > visibleCount && (
+                  <div className="mt-6 flex flex-col items-center gap-1">
+                    <button
+                      onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                      className="px-6 py-2.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-950/80 rounded-xl transition-colors"
+                    >
+                      Load more
+                    </button>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                      Showing {Math.min(visibleCount, filtered.length)} of {filtered.length}
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}

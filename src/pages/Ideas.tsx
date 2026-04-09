@@ -1,7 +1,28 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Navbar } from '../components/Navbar';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useIdeas } from '../hooks/useIdeas';
+
+const IDEA_PAGE_SIZE = 12;
+
+const SKELETON_HEIGHTS = [120, 160, 100, 180, 140, 110, 150, 130, 170, 105, 145, 125];
+
+const IdeaCardSkeleton = ({ height }: { height: number }) => (
+  <div
+    className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-4 animate-pulse mb-4 break-inside-avoid"
+    style={{ minHeight: height }}
+  >
+    <div className="h-4 w-3/4 bg-gray-100 dark:bg-gray-800 rounded-md mb-3" />
+    <div className="space-y-2">
+      <div className="h-3 w-full bg-gray-100 dark:bg-gray-800 rounded-md" />
+      <div className="h-3 w-5/6 bg-gray-100 dark:bg-gray-800 rounded-md" />
+      <div className="h-3 w-4/5 bg-gray-100 dark:bg-gray-800 rounded-md" />
+    </div>
+    <div className="flex gap-1.5 mt-4">
+      <div className="h-4 w-12 bg-gray-100 dark:bg-gray-800 rounded-full" />
+      <div className="h-4 w-16 bg-gray-100 dark:bg-gray-800 rounded-full" />
+    </div>
+  </div>
+);
 import { useAuthStore } from '../store/useAuthStore';
 import { useToastStore } from '../store/useToastStore';
 import { updateIdea } from '../services/ideasService';
@@ -28,6 +49,9 @@ export const Ideas: React.FC = () => {
   const [showArchived, setShowArchived] = useState(false);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [visibleCount, setVisibleCount] = useState(IDEA_PAGE_SIZE);
+
+  useEffect(() => { setVisibleCount(IDEA_PAGE_SIZE); }, [search, activeTag]);
 
   // Collect all unique tags across non-archived ideas (exclude document notes)
   const allTags = useMemo(() => {
@@ -155,7 +179,9 @@ export const Ideas: React.FC = () => {
         )}
 
         {loading ? (
-          <LoadingSpinner />
+          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
+            {SKELETON_HEIGHTS.map((h, i) => <IdeaCardSkeleton key={i} height={h} />)}
+          </div>
         ) : ideas.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center mb-4">
@@ -235,55 +261,78 @@ export const Ideas: React.FC = () => {
           </div>
         ) : (
           /* ── Grid view ── */
-          <>
-            {pinned.length > 0 && (
-              <div className="mb-6">
-                {(unpinned.length > 0 || archived.length > 0) && (
-                  <div className="flex items-center gap-2 mb-3">
-                    <svg className="w-3.5 h-3.5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                    </svg>
-                    <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Pinned</span>
+          (() => {
+            const allNonArchived = [...pinned, ...unpinned];
+            const visibleItems = allNonArchived.slice(0, visibleCount);
+            const visiblePinnedItems = visibleItems.filter((i) => i.pinned);
+            const visibleUnpinnedItems = visibleItems.filter((i) => !i.pinned);
+            const hasMore = allNonArchived.length > visibleCount;
+            return (
+              <>
+                {visiblePinnedItems.length > 0 && (
+                  <div className="mb-6">
+                    {(unpinned.length > 0 || archived.length > 0) && (
+                      <div className="flex items-center gap-2 mb-3">
+                        <svg className="w-3.5 h-3.5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                        </svg>
+                        <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Pinned</span>
+                      </div>
+                    )}
+                    <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
+                      {visiblePinnedItems.map((idea) => <IdeaCard key={idea.id} idea={idea} onEdit={handleEdit} />)}
+                    </div>
                   </div>
                 )}
-                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
-                  {pinned.map((idea) => <IdeaCard key={idea.id} idea={idea} onEdit={handleEdit} />)}
-                </div>
-              </div>
-            )}
 
-            {unpinned.length > 0 && (
-              <div className="mb-6">
-                {pinned.length > 0 && (
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Others</span>
+                {visibleUnpinnedItems.length > 0 && (
+                  <div className="mb-6">
+                    {pinned.length > 0 && (
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Others</span>
+                      </div>
+                    )}
+                    <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
+                      {visibleUnpinnedItems.map((idea) => <IdeaCard key={idea.id} idea={idea} onEdit={handleEdit} />)}
+                    </div>
                   </div>
                 )}
-                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
-                  {unpinned.map((idea) => <IdeaCard key={idea.id} idea={idea} onEdit={handleEdit} />)}
-                </div>
-              </div>
-            )}
 
-            {archived.length > 0 && (
-              <div className="mt-8">
-                <button
-                  onClick={() => setShowArchived(!showArchived)}
-                  className="flex items-center gap-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                >
-                  <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${showArchived ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                  Archived ({archived.length})
-                </button>
-                {showArchived && (
-                  <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
-                    {archived.map((idea) => <IdeaCard key={idea.id} idea={idea} onEdit={handleEdit} />)}
+                {hasMore && (
+                  <div className="mt-2 mb-6 flex flex-col items-center gap-1">
+                    <button
+                      onClick={() => setVisibleCount((c) => c + IDEA_PAGE_SIZE)}
+                      className="px-6 py-2.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-950/80 rounded-xl transition-colors"
+                    >
+                      Load more
+                    </button>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                      Showing {Math.min(visibleCount, allNonArchived.length)} of {allNonArchived.length}
+                    </p>
                   </div>
                 )}
-              </div>
-            )}
-          </>
+
+                {archived.length > 0 && (
+                  <div className="mt-8">
+                    <button
+                      onClick={() => setShowArchived(!showArchived)}
+                      className="flex items-center gap-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    >
+                      <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${showArchived ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                      Archived ({archived.length})
+                    </button>
+                    {showArchived && (
+                      <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
+                        {archived.map((idea) => <IdeaCard key={idea.id} idea={idea} onEdit={handleEdit} />)}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            );
+          })()
         )}
       </main>
 
