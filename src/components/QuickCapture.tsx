@@ -18,12 +18,42 @@ export const QuickCapture: React.FC = () => {
   const [color, setColor] = useState<IdeaColor>('default');
   const [saving, setSaving] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   // Don't render on auth routes or if not logged in
   if (!user || HIDDEN_ROUTES.includes(location.pathname)) return null;
 
   // Don't show on the Ideas page (they already have a FAB + form there)
   if (location.pathname === '/ideas') return null;
+
+  const handleBodyKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== 'Enter' || e.shiftKey) return;
+    const el = bodyRef.current;
+    if (!el) return;
+    const { selectionStart, value } = el;
+    const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1;
+    const currentLine = value.slice(lineStart, selectionStart);
+
+    const numberedMatch = currentLine.match(/^(\d+)\.\s/);
+    const bulletMatch = currentLine.match(/^(-)\s/);
+
+    if (numberedMatch || bulletMatch) {
+      const hasContent = currentLine.slice(numberedMatch ? numberedMatch[0].length : 2).length > 0;
+      if (!hasContent) {
+        e.preventDefault();
+        const newValue = value.slice(0, lineStart) + value.slice(selectionStart);
+        setBody(newValue);
+        setTimeout(() => { el.selectionStart = el.selectionEnd = lineStart; }, 0);
+        return;
+      }
+      e.preventDefault();
+      const prefix = numberedMatch ? `${parseInt(numberedMatch[1], 10) + 1}. ` : '- ';
+      const newValue = value.slice(0, selectionStart) + '\n' + prefix + value.slice(selectionStart);
+      setBody(newValue);
+      const newPos = selectionStart + 1 + prefix.length;
+      setTimeout(() => { el.selectionStart = el.selectionEnd = newPos; }, 0);
+    }
+  };
 
   const resetForm = () => {
     setTitle('');
@@ -58,7 +88,6 @@ export const QuickCapture: React.FC = () => {
         section: 'ideas',
         documentFolderId: null,
       });
-      addToast('Idea captured!', 'success');
       handleClose();
     } catch {
       addToast('Failed to save idea', 'error');
@@ -98,8 +127,10 @@ export const QuickCapture: React.FC = () => {
 
               {/* Body (optional) */}
               <textarea
+                ref={bodyRef}
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
+                onKeyDown={handleBodyKeyDown}
                 placeholder="Add a note..."
                 rows={2}
                 className="w-full mt-3 text-sm text-gray-600 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 border-0 p-0 focus:outline-none focus:ring-0 bg-transparent resize-none"

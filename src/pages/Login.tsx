@@ -30,7 +30,6 @@ export const Login: React.FC = () => {
   const onSubmit = async (data: FormValues) => {
     try {
       await loginUser(data.email, data.password);
-      addToast('Welcome back!', 'success');
       navigate('/dashboard');
     } catch (err: unknown) {
       const code = (err as { code?: string })?.code;

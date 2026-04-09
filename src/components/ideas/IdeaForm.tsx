@@ -28,6 +28,41 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
   const titleRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
 
+  const handleBodyKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== 'Enter' || e.shiftKey) return;
+    const el = bodyRef.current;
+    if (!el) return;
+    const { selectionStart, value } = el;
+    const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1;
+    const currentLine = value.slice(lineStart, selectionStart);
+
+    const numberedMatch = currentLine.match(/^(\d+)\.\s/);
+    const bulletMatch = currentLine.match(/^(-)\s/);
+
+    if (numberedMatch || bulletMatch) {
+      const hasContent = currentLine.slice(numberedMatch ? numberedMatch[0].length : 2).length > 0;
+      if (!hasContent) {
+        // Empty list item — stop the list, remove the prefix
+        e.preventDefault();
+        const newValue = value.slice(0, lineStart) + value.slice(selectionStart);
+        setBody(newValue);
+        setTimeout(() => { el.selectionStart = el.selectionEnd = lineStart; }, 0);
+        return;
+      }
+      e.preventDefault();
+      let prefix: string;
+      if (numberedMatch) {
+        prefix = `${parseInt(numberedMatch[1], 10) + 1}. `;
+      } else {
+        prefix = '- ';
+      }
+      const newValue = value.slice(0, selectionStart) + '\n' + prefix + value.slice(selectionStart);
+      setBody(newValue);
+      const newPos = selectionStart + 1 + prefix.length;
+      setTimeout(() => { el.selectionStart = el.selectionEnd = newPos; }, 0);
+    }
+  };
+
   const resizeBody = () => {
     const el = bodyRef.current;
     if (!el) return;
@@ -171,6 +206,7 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
             ref={bodyRef}
             value={body}
             onChange={(e) => { setBody(e.target.value); resizeBody(); }}
+            onKeyDown={handleBodyKeyDown}
             placeholder="Take a note..."
             className="w-full bg-transparent text-sm text-gray-600 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none resize-none mt-3 leading-relaxed block"
             style={{ minHeight: '96px' }}

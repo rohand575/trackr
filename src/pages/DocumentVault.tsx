@@ -71,6 +71,7 @@ export const DocumentVault: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState<FilterCategory>('All');
   const [selectedView, setSelectedView] = useState<SidebarView>('all');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false);
 
   // Notes scoped to the current view (folder-aware)
   const documentNotes = useMemo(() => {
@@ -139,6 +140,7 @@ export const DocumentVault: React.FC = () => {
     setSearch('');
     setFilterStatus('All');
     setFilterCategory('All');
+    setSidebarMobileOpen(false);
   };
 
   return (
@@ -146,7 +148,27 @@ export const DocumentVault: React.FC = () => {
       <Navbar />
 
       <div className="flex flex-1 min-h-0">
-        {/* ── Collapsible sidebar panel ── */}
+        {/* ── Mobile sidebar drawer ── */}
+        <div className={`sm:hidden fixed inset-0 z-50 flex ${sidebarMobileOpen ? '' : 'pointer-events-none'}`}>
+          {/* Backdrop */}
+          <div
+            className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-200 ${sidebarMobileOpen ? 'opacity-100' : 'opacity-0'}`}
+            onClick={() => setSidebarMobileOpen(false)}
+          />
+          {/* Drawer panel */}
+          <aside className={`relative w-56 shrink-0 flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 overflow-hidden h-full shadow-xl transition-transform duration-200 ${sidebarMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <FolderSidebar
+              selectedView={selectedView}
+              onSelectView={handleViewChange}
+              folders={folders}
+              documents={documents}
+              collapsed={false}
+              onCollapse={() => setSidebarMobileOpen(false)}
+            />
+          </aside>
+        </div>
+
+        {/* ── Desktop collapsible sidebar panel ── */}
         {!sidebarCollapsed && (
           <aside className="hidden sm:flex w-56 shrink-0 flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 overflow-hidden">
             <FolderSidebar
@@ -166,7 +188,17 @@ export const DocumentVault: React.FC = () => {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                {/* Always-visible sidebar toggle */}
+                {/* Mobile sidebar toggle */}
+                <button
+                  onClick={() => setSidebarMobileOpen(true)}
+                  title="Open folders"
+                  className="sm:hidden p-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                  </svg>
+                </button>
+                {/* Desktop sidebar toggle */}
                 <button
                   onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
                   title={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
