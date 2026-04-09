@@ -9,11 +9,9 @@ import { IdeaCard } from '../components/ideas/IdeaCard';
 import { useDocuments } from '../hooks/useDocuments';
 import { useFolders } from '../hooks/useFolders';
 import { useIdeas } from '../hooks/useIdeas';
-import { getDocumentStatus } from '../services/documentsService';
-import type { Document, DocumentCategory, DocumentStatus } from '../types/documents';
+import type { Document, DocumentCategory } from '../types/documents';
 import type { Idea } from '../types/ideas';
 
-type FilterStatus = DocumentStatus | 'All';
 type FilterCategory = DocumentCategory | 'All';
 
 const CATEGORIES: DocumentCategory[] = [
@@ -21,20 +19,6 @@ const CATEGORIES: DocumentCategory[] = [
   'Employment', 'Insurance', 'Property', 'Vehicle', 'Other',
 ];
 
-const STATUS_OPTIONS: { label: string; value: FilterStatus; dot?: string }[] = [
-  { label: 'All', value: 'All' },
-  { label: 'Valid', value: 'Valid', dot: 'bg-emerald-500' },
-  { label: 'Expiring Soon', value: 'Expiring Soon', dot: 'bg-amber-500' },
-  { label: 'Expired', value: 'Expired', dot: 'bg-red-500' },
-  { label: 'No Expiry', value: 'No Expiry', dot: 'bg-gray-400' },
-];
-
-const SMART_VIEW_LABELS: Record<string, string> = {
-  all: 'All Documents',
-  expiring: 'Expiring Soon',
-  expired: 'Expired',
-  unfiled: 'Unfiled',
-};
 
 const EmptyDocuments: React.FC<{ onAdd: () => void }> = ({ onAdd }) => (
   <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -67,7 +51,6 @@ export const DocumentVault: React.FC = () => {
   const [noteFormOpen, setNoteFormOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Idea | null>(null);
   const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState<FilterStatus>('All');
   const [filterCategory, setFilterCategory] = useState<FilterCategory>('All');
   const [selectedView, setSelectedView] = useState<SidebarView>('all');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -77,41 +60,24 @@ export const DocumentVault: React.FC = () => {
   const documentNotes = useMemo(() => {
     const all = ideas.filter((i) => i.section === 'documents' && !i.isArchived);
     if (selectedView === 'all') return all;
-    // Smart views (expiring/expired/unfiled) don't show notes
-    if (['expiring', 'expired', 'unfiled'].includes(selectedView)) return [];
-    // Specific folder: only notes directly in that folder
     return all.filter((n) => n.documentFolderId === selectedView);
   }, [ideas, selectedView]);
 
   const knownFolderIds = useMemo(() => new Set(folders.map((f) => f.id)), [folders]);
 
-  const SMART_VIEWS = new Set(['all', 'expiring', 'expired', 'unfiled']);
-  const isSmartView = SMART_VIEWS.has(selectedView);
-  const activeFolderName = !isSmartView ? folders.find((f) => f.id === selectedView)?.name : null;
-  const viewLabel = activeFolderName ?? SMART_VIEW_LABELS[selectedView] ?? 'Documents';
+  const isFolder = selectedView !== 'all';
+  const activeFolderName = isFolder ? folders.find((f) => f.id === selectedView)?.name : null;
+  const viewLabel = activeFolderName ?? 'All Documents';
 
   // Default folderId for new documents: current folder (if a user folder is selected)
-  const defaultFolderId = isSmartView ? null : selectedView;
+  const defaultFolderId = isFolder ? selectedView : null;
 
   const filtered = useMemo(() => {
     let docs = documents;
 
     // Sidebar view filter
-    switch (selectedView) {
-      case 'all':
-        break;
-      case 'expiring':
-        docs = docs.filter((d) => getDocumentStatus(d.expiryDate) === 'Expiring Soon');
-        break;
-      case 'expired':
-        docs = docs.filter((d) => getDocumentStatus(d.expiryDate) === 'Expired');
-        break;
-      case 'unfiled':
-        docs = docs.filter((d) => !d.folderId || !knownFolderIds.has(d.folderId));
-        break;
-      default:
-        // folder ID
-        docs = docs.filter((d) => d.folderId === selectedView);
+    if (selectedView !== 'all') {
+      docs = docs.filter((d) => d.folderId === selectedView);
     }
 
     // Search + secondary filters
@@ -127,18 +93,13 @@ export const DocumentVault: React.FC = () => {
         if (!match) return false;
       }
       if (filterCategory !== 'All' && doc.category !== filterCategory) return false;
-      if (filterStatus !== 'All' && getDocumentStatus(doc.expiryDate) !== filterStatus) return false;
       return true;
     });
-  }, [documents, selectedView, knownFolderIds, search, filterStatus, filterCategory]);
-
-  const expiringSoon = documents.filter((d) => getDocumentStatus(d.expiryDate) === 'Expiring Soon').length;
-  const expired = documents.filter((d) => getDocumentStatus(d.expiryDate) === 'Expired').length;
+  }, [documents, selectedView, knownFolderIds, search, filterCategory]);
 
   const handleViewChange = (view: SidebarView) => {
     setSelectedView(view);
     setSearch('');
-    setFilterStatus('All');
     setFilterCategory('All');
     setSidebarMobileOpen(false);
   };
@@ -212,8 +173,6 @@ export const DocumentVault: React.FC = () => {
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{viewLabel}</h1>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                     {documents.length} document{documents.length !== 1 ? 's' : ''}
-                    {expiringSoon > 0 && <span className="text-amber-600"> · {expiringSoon} expiring soon</span>}
-                    {expired > 0 && <span className="text-red-600"> · {expired} expired</span>}
                   </p>
                 </div>
               </div>
@@ -270,24 +229,6 @@ export const DocumentVault: React.FC = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
-
-                {/* Status filter */}
-                <div className="flex gap-1.5 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl overflow-x-auto">
-                  {STATUS_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setFilterStatus(opt.value)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                        filterStatus === opt.value
-                          ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm border border-gray-200/80 dark:border-gray-600'
-                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                      }`}
-                    >
-                      {opt.dot && <span className={`w-1.5 h-1.5 rounded-full ${opt.dot}`} />}
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
               </div>
             )}
 
@@ -325,11 +266,11 @@ export const DocumentVault: React.FC = () => {
                 <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-4 text-3xl">🔍</div>
                 <h3 className="text-base font-semibold text-gray-700 dark:text-gray-200 mb-1">No matching documents</h3>
                 <p className="text-sm text-gray-400 dark:text-gray-500">
-                  {search || filterStatus !== 'All' || filterCategory !== 'All'
+                  {search || filterCategory !== 'All'
                     ? 'Try adjusting your search or filters'
                     : 'This folder is empty — add a document to get started'}
                 </p>
-                {!isSmartView && !search && filterStatus === 'All' && filterCategory === 'All' && (
+                {isFolder && !search && filterCategory === 'All' && (
                   <button
                     onClick={() => setFormOpen(true)}
                     className="mt-4 flex items-center gap-2 px-4 py-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 rounded-xl transition-colors"
@@ -388,7 +329,7 @@ export const DocumentVault: React.FC = () => {
         onClose={() => { setNoteFormOpen(false); setEditingNote(null); }}
         editingIdea={editingNote}
         section="documents"
-        documentFolderId={isSmartView ? null : selectedView}
+        documentFolderId={isFolder ? selectedView : null}
       />
     </div>
   );

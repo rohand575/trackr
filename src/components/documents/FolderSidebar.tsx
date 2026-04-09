@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import type { DocumentFolder, Document } from '../../types/documents';
-import { getDocumentStatus } from '../../services/documentsService';
 import { addFolder, updateFolder, deleteFolder } from '../../services/foldersService';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useToastStore } from '../../store/useToastStore';
@@ -114,12 +113,7 @@ export const FolderSidebar: React.FC<Props> = ({
   const knownFolderIds = useMemo(() => new Set(folders.map((f) => f.id)), [folders]);
   const folderTree = useMemo(() => buildTree(folders, null, knownFolderIds), [folders, knownFolderIds]);
 
-  const counts = {
-    all: documents.length,
-    expiring: documents.filter((d) => getDocumentStatus(d.expiryDate) === 'Expiring Soon').length,
-    expired: documents.filter((d) => getDocumentStatus(d.expiryDate) === 'Expired').length,
-    unfiled: documents.filter((d) => !d.folderId || !knownFolderIds.has(d.folderId)).length,
-  };
+  const totalCount = documents.length;
 
   const folderDocCount = (folderId: string) =>
     documents.filter((d) => d.folderId === folderId).length;
@@ -373,23 +367,8 @@ export const FolderSidebar: React.FC<Props> = ({
         <div className="px-2 pb-2 space-y-0.5">
           <NavItem
             icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
-            label="All Documents" count={counts.all} active={selectedView === 'all'}
+            label="All Documents" count={totalCount} active={selectedView === 'all'}
             onClick={() => onSelectView('all')}
-          />
-          <NavItem
-            icon={<svg className="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>}
-            label="Expiring Soon" count={counts.expiring} active={selectedView === 'expiring'}
-            onClick={() => onSelectView('expiring')} countColor="text-amber-500"
-          />
-          <NavItem
-            icon={<svg className="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-            label="Expired" count={counts.expired} active={selectedView === 'expired'}
-            onClick={() => onSelectView('expired')} countColor="text-red-500"
-          />
-          <NavItem
-            icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>}
-            label="Unfiled" count={counts.unfiled} active={selectedView === 'unfiled'}
-            onClick={() => onSelectView('unfiled')}
           />
         </div>
 

@@ -12,7 +12,6 @@ import { Ideas } from './pages/Ideas';
 import { Settings } from './pages/Settings';
 import { Toast } from './components/Toast';
 import { BiometricLock } from './components/BiometricLock';
-import { QuickCapture } from './components/QuickCapture';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { useAuth } from './hooks/useAuth';
@@ -175,8 +174,7 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Toast />
-      <QuickCapture />
-      <DeepLinkHandler />
+<DeepLinkHandler />
       <NotificationManager />
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

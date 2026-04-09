@@ -100,10 +100,10 @@ export const subscribeToIdeas = (
   userId: string,
   callback: (ideas: Idea[]) => void
 ): Unsubscribe => {
-  const q = query(ref(userId), orderBy('createdAt', 'desc'));
+  const q = query(ref(userId), orderBy('updatedAt', 'desc'));
   return onSnapshot(q, (snap) => {
     const ideas = snap.docs.map((d) => toIdea(d.id, d.data() as Record<string, unknown>));
-    // Sort: pinned first, then by createdAt desc (already from query)
+    // Sort: pinned first, then by updatedAt desc (already from query)
     ideas.sort((a, b) => {
       if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
       return 0; // preserve Firestore order within same pin state
