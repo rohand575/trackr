@@ -122,7 +122,6 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
       };
       if (editingIdea) {
         await updateIdea(user.uid, editingIdea.id, formData);
-        addToast('Idea updated', 'success');
       } else {
         await addIdea(user.uid, formData);
         addToast('Idea saved!', 'success');
