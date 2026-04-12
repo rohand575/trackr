@@ -47,6 +47,16 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* Keyboard focus rings — visible only for keyboard navigation */
+:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.dark :focus-visible {
+  outline-color: #818cf8;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -66,7 +76,7 @@ body {
 }
 
 .dark body {
-  background-color: #030712;
+  background-color: #111827;
 }
 
 #root {

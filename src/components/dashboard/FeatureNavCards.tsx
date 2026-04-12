@@ -13,7 +13,6 @@ export const FeatureNavCards: React.FC<FeatureNavCardsProps> = ({ data }) => {
       to: '/subscriptions',
       icon: '💳',
       label: 'Subscriptions',
-      color: 'indigo',
       metric1: data.isLoading ? '—' : (() => {
         if (data.subMonthlyEUR > 0 && data.subMonthlyINR > 0)
           return `${formatCurrency(data.subMonthlyEUR, 'EUR')} + ${formatCurrency(data.subMonthlyINR, 'INR')}/mo`;
@@ -21,15 +20,14 @@ export const FeatureNavCards: React.FC<FeatureNavCardsProps> = ({ data }) => {
         if (data.subMonthlyINR > 0) return `${formatCurrency(data.subMonthlyINR, 'INR')}/mo`;
         return 'No active subs';
       })(),
-      bg: 'bg-indigo-50',
-      textColor: 'text-indigo-700',
-      hoverBorder: 'hover:border-indigo-200',
+      bg: 'bg-indigo-50 dark:bg-indigo-950/50',
+      textColor: 'text-indigo-700 dark:text-indigo-300',
+      hoverBorder: 'hover:border-indigo-200 dark:hover:border-indigo-800',
     },
     {
       to: '/bills',
       icon: '🧾',
       label: 'Bills',
-      color: 'teal',
       metric1: data.isLoading ? '—' : (() => {
         if (data.billMonthlyEUR > 0 && data.billMonthlyINR > 0)
           return `${formatCurrency(data.billMonthlyEUR, 'EUR')} + ${formatCurrency(data.billMonthlyINR, 'INR')}/mo`;
@@ -37,27 +35,25 @@ export const FeatureNavCards: React.FC<FeatureNavCardsProps> = ({ data }) => {
         if (data.billMonthlyINR > 0) return `${formatCurrency(data.billMonthlyINR, 'INR')}/mo`;
         return 'No active bills';
       })(),
-      bg: 'bg-teal-50',
-      textColor: 'text-teal-700',
-      hoverBorder: 'hover:border-teal-200',
+      bg: 'bg-teal-50 dark:bg-teal-950/50',
+      textColor: 'text-teal-700 dark:text-teal-300',
+      hoverBorder: 'hover:border-teal-200 dark:hover:border-teal-800',
     },
     {
       to: '/goals-habits',
       icon: '🎯',
       label: 'Goals & Habits',
-      color: 'purple',
       metric1: data.isLoading
         ? '—'
         : `${data.activeGoals.length} goal${data.activeGoals.length !== 1 ? 's' : ''} · ${data.activeHabits.length} habit${data.activeHabits.length !== 1 ? 's' : ''}`,
-      bg: 'bg-purple-50',
-      textColor: 'text-purple-700',
-      hoverBorder: 'hover:border-purple-200',
+      bg: 'bg-purple-50 dark:bg-purple-950/50',
+      textColor: 'text-purple-700 dark:text-purple-300',
+      hoverBorder: 'hover:border-purple-200 dark:hover:border-purple-800',
     },
     {
       to: '/documents',
       icon: '🗂️',
       label: 'Documents',
-      color: 'amber',
       metric1: data.isLoading
         ? '—'
         : data.expiredDocs.length > 0
@@ -65,9 +61,9 @@ export const FeatureNavCards: React.FC<FeatureNavCardsProps> = ({ data }) => {
         : data.expiringSoonDocs.length > 0
         ? `${data.expiringSoonDocs.length} expiring soon`
         : `${data.totalValidDocs} valid`,
-      bg: 'bg-amber-50',
-      textColor: 'text-amber-700',
-      hoverBorder: 'hover:border-amber-200',
+      bg: 'bg-amber-50 dark:bg-amber-950/50',
+      textColor: 'text-amber-700 dark:text-amber-300',
+      hoverBorder: 'hover:border-amber-200 dark:hover:border-amber-800',
     },
   ];
 
@@ -77,7 +73,7 @@ export const FeatureNavCards: React.FC<FeatureNavCardsProps> = ({ data }) => {
         <Link
           key={card.to}
           to={card.to}
-          className={`bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-4 flex flex-col gap-2 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${card.hoverBorder}`}
+          className={`bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-4 flex flex-col gap-2 hover:shadow-md hover:-translate-y-1 transition-all duration-200 ${card.hoverBorder}`}
         >
           <div className={`w-9 h-9 rounded-xl ${card.bg} flex items-center justify-center text-xl`}>
             {card.icon}

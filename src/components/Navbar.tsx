@@ -89,7 +89,7 @@ export const Navbar: React.FC = () => {
   return (
     <>
     <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-    <header className="sticky top-0 z-30 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 shadow-sm pt-safe transition-colors duration-200">
+    <header className="sticky top-0 z-30 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 shadow-sm pt-safe transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
