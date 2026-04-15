@@ -159,6 +159,18 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
     }
   };
 
+  // Global Escape key handler — save and close the form
+  const handleSaveRef = useRef(handleSave);
+  useEffect(() => { handleSaveRef.current = handleSave; });
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleSaveRef.current();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isOpen]);
+
   const addChecklistItem = () => {
     const text = newItemText.trim();
     if (!text) return;
@@ -337,6 +349,7 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
                           insertItemAfter(item.id, editingItemText);
                         }
                         if (e.key === 'Escape') {
+                          e.stopPropagation();
                           setEditingItemId(null);
                           setEditingItemText('');
                         }
