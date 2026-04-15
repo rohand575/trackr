@@ -25,8 +25,22 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
   const [newItemText, setNewItemText] = useState('');
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Inline editing state for checklist items
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editingItemText, setEditingItemText] = useState('');
+
   const titleRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const editingItemRef = useRef<HTMLTextAreaElement>(null);
+  const newItemRef = useRef<HTMLTextAreaElement>(null);
+
+  // Drag-and-drop refs
+  const dragFromIndex = useRef<number | null>(null);
+  const dragOverIndex = useRef<number | null>(null);
+
+  // Prevents blur from firing a second save when Enter inserts a new item
+  const enterPressedRef = useRef(false);
 
   const handleBodyKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key !== 'Enter' || e.shiftKey) return;
@@ -42,7 +56,6 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
     if (numberedMatch || bulletMatch) {
       const hasContent = currentLine.slice(numberedMatch ? numberedMatch[0].length : 2).length > 0;
       if (!hasContent) {
-        // Empty list item — stop the list, remove the prefix
         e.preventDefault();
         const newValue = value.slice(0, lineStart) + value.slice(selectionStart);
         setBody(newValue);
@@ -92,9 +105,21 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
     }
     setTagInput('');
     setNewItemText('');
+    setEditingItemId(null);
+    setEditingItemText('');
     setShowColorPicker(false);
     setTimeout(() => titleRef.current?.focus(), 50);
   }, [editingIdea, isOpen]);
+
+  // Auto-focus + resize the inline edit textarea whenever the active item changes
+  useEffect(() => {
+    if (!editingItemId || !editingItemRef.current) return;
+    const el = editingItemRef.current;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+    el.focus();
+    el.selectionStart = el.selectionEnd = el.value.length;
+  }, [editingItemId]);
 
   const handleSave = async () => {
     if (!user || saving) return;
@@ -139,6 +164,9 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
     if (!text) return;
     setChecklist((prev) => [...prev, { id: crypto.randomUUID(), text, checked: false }]);
     setNewItemText('');
+    if (newItemRef.current) {
+      newItemRef.current.style.height = 'auto';
+    }
   };
 
   const removeChecklistItem = (id: string) => {
@@ -149,6 +177,47 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
     setChecklist((prev) =>
       prev.map((item) => item.id === id ? { ...item, checked: !item.checked } : item)
     );
+  };
+
+  // Save the edited text for an item without closing edit mode
+  const saveEditItemText = (id: string) => {
+    const text = editingItemText.trim();
+    setChecklist((prev) =>
+      text
+        ? prev.map((item) => item.id === id ? { ...item, text } : item)
+        : prev.filter((item) => item.id !== id)
+    );
+  };
+
+  // Insert a new empty item after `afterId`, saving the current edit text first
+  const insertItemAfter = (afterId: string, currentText: string) => {
+    const newId = crypto.randomUUID();
+    setChecklist((prev) => {
+      const updated = prev.map((item) =>
+        item.id === afterId ? { ...item, text: currentText.trim() || item.text } : item
+      );
+      const idx = updated.findIndex((i) => i.id === afterId);
+      const next = [...updated];
+      next.splice(idx + 1, 0, { id: newId, text: '', checked: false });
+      return next;
+    });
+    setEditingItemId(newId);
+    setEditingItemText('');
+  };
+
+  const handleDragSort = () => {
+    const from = dragFromIndex.current;
+    const to = dragOverIndex.current;
+    if (from !== null && to !== null && from !== to) {
+      setChecklist((prev) => {
+        const updated = [...prev];
+        const [moved] = updated.splice(from, 1);
+        updated.splice(to, 0, moved);
+        return updated;
+      });
+    }
+    dragFromIndex.current = null;
+    dragOverIndex.current = null;
   };
 
   const addTag = () => {
@@ -213,24 +282,86 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
 
           {/* Checklist items */}
           {checklist.length > 0 && (
-            <div className="space-y-2 mt-3 border-t border-gray-200/60 dark:border-gray-700/60 pt-3">
-              {checklist.map((item) => (
-                <div key={item.id} className="flex items-start gap-2 group/item">
+            <div className="space-y-0.5 mt-3 border-t border-gray-200/60 dark:border-gray-700/60 pt-3">
+              {checklist.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="flex items-start gap-1.5 group/item rounded-lg px-1 -mx-1 transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.02]"
+                  draggable
+                  onDragStart={() => { dragFromIndex.current = index; }}
+                  onDragEnter={() => { dragOverIndex.current = index; }}
+                  onDragEnd={handleDragSort}
+                  onDragOver={(e) => e.preventDefault()}
+                >
+                  {/* Drag handle */}
+                  <div className="mt-1 shrink-0 cursor-grab active:cursor-grabbing text-gray-300 dark:text-gray-600 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                      <circle cx="7" cy="4" r="1.4" />
+                      <circle cx="7" cy="10" r="1.4" />
+                      <circle cx="7" cy="16" r="1.4" />
+                      <circle cx="13" cy="4" r="1.4" />
+                      <circle cx="13" cy="10" r="1.4" />
+                      <circle cx="13" cy="16" r="1.4" />
+                    </svg>
+                  </div>
+
                   <input
                     type="checkbox"
                     checked={item.checked}
                     onChange={() => toggleChecklistItem(item.id)}
-                    className="mt-0.5 w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500/30 cursor-pointer shrink-0"
+                    className="mt-1 w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500/30 cursor-pointer shrink-0"
                   />
-                  <span
-                    className={`text-sm flex-1 break-words leading-snug ${item.checked ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-700 dark:text-gray-300'}`}
-                  >
-                    {item.text}
-                  </span>
+
+                  {editingItemId === item.id ? (
+                    <textarea
+                      ref={editingItemRef}
+                      value={editingItemText}
+                      onChange={(e) => {
+                        setEditingItemText(e.target.value);
+                        e.target.style.height = 'auto';
+                        e.target.style.height = `${e.target.scrollHeight}px`;
+                      }}
+                      onBlur={() => {
+                        if (enterPressedRef.current) {
+                          enterPressedRef.current = false;
+                          return;
+                        }
+                        saveEditItemText(item.id);
+                        setEditingItemId(null);
+                        setEditingItemText('');
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          enterPressedRef.current = true;
+                          insertItemAfter(item.id, editingItemText);
+                        }
+                        if (e.key === 'Escape') {
+                          setEditingItemId(null);
+                          setEditingItemText('');
+                        }
+                      }}
+                      rows={1}
+                      className={`flex-1 bg-transparent text-sm leading-snug focus:outline-none resize-none overflow-hidden ${item.checked ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-700 dark:text-gray-300'}`}
+                      style={{ minHeight: '1.25rem' }}
+                    />
+                  ) : (
+                    <span
+                      onDoubleClick={() => {
+                        setEditingItemId(item.id);
+                        setEditingItemText(item.text);
+                      }}
+                      title="Double-click to edit"
+                      className={`flex-1 text-sm break-words leading-snug py-0.5 cursor-text select-text ${item.checked ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-700 dark:text-gray-300'}`}
+                    >
+                      {item.text}
+                    </span>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => removeChecklistItem(item.id)}
-                    className="p-0.5 text-gray-300 hover:text-red-500 rounded transition-colors opacity-0 group-hover/item:opacity-100 shrink-0"
+                    className="p-0.5 mt-0.5 text-gray-300 hover:text-red-500 rounded transition-colors opacity-0 group-hover/item:opacity-100 shrink-0"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -242,19 +373,31 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
           )}
 
           {/* Add checklist item */}
-          <div className="flex items-center gap-2 mt-3">
-            <svg className="w-4 h-4 text-gray-300 dark:text-gray-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="flex items-start gap-2 mt-3">
+            <svg className="w-4 h-4 mt-0.5 text-gray-300 dark:text-gray-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
-            <input
+            <textarea
+              ref={newItemRef}
               value={newItemText}
-              onChange={(e) => setNewItemText(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addChecklistItem(); } }}
+              onChange={(e) => {
+                setNewItemText(e.target.value);
+                e.target.style.height = 'auto';
+                e.target.style.height = `${e.target.scrollHeight}px`;
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  addChecklistItem();
+                }
+              }}
               placeholder="List item"
-              className="flex-1 bg-transparent text-sm text-gray-600 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none"
+              rows={1}
+              className="flex-1 bg-transparent text-sm text-gray-600 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none resize-none overflow-hidden leading-snug"
+              style={{ minHeight: '1.25rem' }}
             />
             {newItemText.trim() && (
-              <button type="button" onClick={addChecklistItem} className="text-sm text-indigo-600 font-medium px-1 hover:text-indigo-800 transition-colors">
+              <button type="button" onClick={addChecklistItem} className="text-sm text-indigo-600 font-medium px-1 hover:text-indigo-800 transition-colors shrink-0 mt-0.5">
                 Add
               </button>
             )}
