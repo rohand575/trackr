@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Goal, Milestone } from '../../types/goals';
 import { updateGoal, deleteGoal, updateMilestones } from '../../services/goalsService';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -22,6 +23,7 @@ const STATUS_STYLES: Record<Goal['status'], string> = {
 };
 
 export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const { addToast } = useToastStore();
   const [showConfirm, setShowConfirm] = useState(false);
@@ -285,6 +287,15 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                 Milestone
               </button>
+              {goal.status === 'Active' && (
+                <button
+                  onClick={() => navigate(`/goals-habits/goal/${goal.id}`)}
+                  className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                  Details
+                </button>
+              )}
             </div>
           </div>
 

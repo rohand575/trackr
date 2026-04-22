@@ -10,7 +10,7 @@ const NAV_LINKS = [
   { to: '/dashboard', label: 'Overview', icon: '📊' },
   { to: '/payments', label: 'Payments', icon: '💳' },
   { to: '/goals-habits', label: 'Goals & Habits', icon: '🎯' },
-  { to: '/ideas', label: 'Ideas', icon: '💡' },
+{ to: '/ideas', label: 'Ideas', icon: '💡' },
   { to: '/documents', label: 'Documents', icon: '🗂️' },
 ];
 

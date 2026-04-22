@@ -7,6 +7,8 @@ import { Register } from './pages/Register';
 import { Payments } from './pages/Payments';
 import { OverviewDashboard } from './pages/OverviewDashboard';
 import { GoalsHabits } from './pages/GoalsHabits';
+import { GoalDetailPage } from './pages/GoalDetailPage';
+import { Fitness } from './pages/Fitness';
 import { DocumentVault } from './pages/DocumentVault';
 import { Ideas } from './pages/Ideas';
 import { Settings } from './pages/Settings';
@@ -220,6 +222,14 @@ const App: React.FC = () => {
           }
         />
         <Route
+          path="/goals-habits/goal/:goalId"
+          element={
+            <ProtectedRoute>
+              <GoalDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/ideas"
           element={
             <ProtectedRoute>
@@ -244,6 +254,7 @@ const App: React.FC = () => {
             </ProtectedRoute>
           }
         />
+        <Route path="/fitness" element={<Fitness />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
