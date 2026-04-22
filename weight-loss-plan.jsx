@@ -20,11 +20,12 @@ const styles = `
 
   .wlp .header {
     background: linear-gradient(135deg, #0F3460 0%, #16213E 60%, #1A1A2E 100%);
-    padding: 32px 24px 24px;
+    padding: 24px 16px 20px;
     border-bottom: 3px solid ${SAFFRON};
     position: relative;
     overflow: hidden;
   }
+  @media (min-width: 640px) { .wlp .header { padding: 32px 24px 24px; } }
   .wlp .header::before {
     content: '';
     position: absolute;
@@ -74,21 +75,25 @@ const styles = `
 
   .wlp .tabs {
     display: flex; gap: 4px;
-    padding: 16px 16px 0;
+    padding: 12px 12px 0;
     background: ${DEEP};
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
     border-bottom: 1px solid rgba(255,255,255,0.06);
   }
+  .wlp .tabs::-webkit-scrollbar { display: none; }
   .wlp .tab-btn {
     background: none; border: none; cursor: pointer;
     font-family: 'DM Sans', sans-serif;
-    font-size: 13px; font-weight: 500;
+    font-size: 12px; font-weight: 500;
     color: ${SOFT};
-    padding: 10px 16px;
+    padding: 10px 12px;
     border-radius: 8px 8px 0 0;
     white-space: nowrap;
     transition: all 0.2s;
     border-bottom: 3px solid transparent;
+    -webkit-tap-highlight-color: transparent;
   }
   .wlp .tab-btn:hover { color: white; background: rgba(255,255,255,0.05); }
   .wlp .tab-btn.active {
@@ -98,7 +103,8 @@ const styles = `
   }
   .wlp .tab-btn .emoji { margin-right: 6px; }
 
-  .wlp .content { padding: 20px 16px; max-width: 900px; margin: 0 auto; }
+  .wlp .content { padding: 16px 14px; max-width: 900px; margin: 0 auto; }
+  @media (min-width: 640px) { .wlp .content { padding: 20px 24px; } }
 
   .wlp .section-title {
     font-family: 'Syne', sans-serif;
@@ -139,7 +145,7 @@ const styles = `
   .wlp .card-title.red { color: ${RED}; }
   .wlp .card-title.white { color: white; }
 
-  .wlp .row-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .wlp .row-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 12px; }
 
   .wlp .macro-box {
     background: rgba(255,255,255,0.04);
@@ -159,16 +165,17 @@ const styles = `
 
   .wlp .timeline { display: flex; flex-direction: column; gap: 0; }
   .wlp .timeline-item {
-    display: flex; align-items: flex-start; gap: 14px;
+    display: flex; align-items: flex-start; gap: 10px;
     padding: 12px 0;
     border-bottom: 1px solid rgba(255,255,255,0.05);
+    flex-wrap: wrap;
   }
   .wlp .timeline-item:last-child { border-bottom: none; }
   .wlp .t-time {
     font-family: 'Syne', sans-serif;
-    font-size: 13px; font-weight: 700;
+    font-size: 12px; font-weight: 700;
     color: ${SAFFRON};
-    min-width: 70px;
+    min-width: 60px;
   }
   .wlp .t-dot {
     width: 10px; height: 10px;
@@ -215,7 +222,7 @@ const styles = `
   .wlp .meal-badge.dinner { background: rgba(245,166,35,0.2); color: ${SAFFRON}; }
   .wlp .meal-badge.preworkout { background: rgba(231,76,60,0.2); color: ${RED}; }
 
-  .wlp .meal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+  .wlp .meal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 10px; }
   .wlp .meal-card {
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.07);
@@ -323,7 +330,7 @@ const styles = `
   .wlp .nb-key { color: ${SOFT}; min-width: 120px; font-weight: 500; }
   .wlp .nb-val { color: ${TEXT}; }
 
-  .wlp .gym-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .wlp .gym-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 10px; }
   .wlp .gym-card {
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.07);
