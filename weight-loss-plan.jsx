@@ -57,14 +57,15 @@ const styles = `
   .wlp .header-sub { color: ${SOFT}; font-size: 14px; margin-top: 6px; font-weight: 300; }
 
   .wlp .stat-row {
-    display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;
+    display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;
   }
   .wlp .stat-chip {
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 10px;
-    padding: 10px 16px;
+    padding: 10px 14px;
     display: flex; flex-direction: column; gap: 2px;
+    flex: 1; min-width: 120px;
   }
   .wlp .stat-chip .label { font-size: 10px; color: ${SOFT}; text-transform: uppercase; letter-spacing: 1px; }
   .wlp .stat-chip .val { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: white; }
