@@ -1,9 +1,31 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import type { Idea, IdeaFormData, IdeaColor, ChecklistItem } from '../../types/ideas';
 import { addIdea, updateIdea } from '../../services/ideasService';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useToastStore } from '../../store/useToastStore';
 import { IdeaColorPicker, IDEA_COLOR_MAP, IDEA_BORDER_MAP } from './IdeaColorPicker';
+import { extractLinks } from '../../utils/linkUtils';
+import { useLinkTitle } from '../../hooks/useLinkTitle';
+
+const FormLinkPreview: React.FC<{ url: string }> = ({ url }) => {
+  const title = useLinkTitle(url);
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1.5 px-2 py-1 bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 rounded-lg text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors max-w-full"
+    >
+      <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+      </svg>
+      <span className="truncate">{title}</span>
+      <svg className="w-3 h-3 shrink-0 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+      </svg>
+    </a>
+  );
+};
 
 interface IdeaFormProps {
   isOpen: boolean;
@@ -25,6 +47,8 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
   const [newItemText, setNewItemText] = useState('');
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const detectedLinks = useMemo(() => extractLinks(body), [body]);
 
   // Inline editing state for checklist items
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -291,6 +315,15 @@ export const IdeaForm: React.FC<IdeaFormProps> = ({ isOpen, onClose, editingIdea
             className="w-full bg-transparent text-sm text-gray-600 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none resize-none mt-3 leading-relaxed block"
             style={{ minHeight: '96px' }}
           />
+
+          {/* Link previews */}
+          {detectedLinks.length > 0 && (
+            <div className="mt-2 flex flex-col gap-1.5">
+              {detectedLinks.map((url) => (
+                <FormLinkPreview key={url} url={url} />
+              ))}
+            </div>
+          )}
 
           {/* Checklist items */}
           {checklist.length > 0 && (

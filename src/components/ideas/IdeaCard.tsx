@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useToastStore } from '../../store/useToastStore';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { IdeaColorPicker, IDEA_COLOR_MAP, IDEA_BORDER_MAP } from './IdeaColorPicker';
+import { BodyWithLinks } from './BodyWithLinks';
 
 interface IdeaCardProps {
   idea: Idea;
@@ -108,9 +109,10 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onEdit, folderBadge })
 
           {/* Body text */}
           {idea.body && (
-            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed mb-3 whitespace-pre-line line-clamp-6">
-              {idea.body}
-            </p>
+            <BodyWithLinks
+              text={idea.body}
+              className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed mb-3 whitespace-pre-line line-clamp-6"
+            />
           )}
 
           {/* Checklist */}

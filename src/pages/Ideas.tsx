@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Navbar } from '../components/Navbar';
 import { useIdeas } from '../hooks/useIdeas';
+import { BodyWithLinks } from '../components/ideas/BodyWithLinks';
 
 const IDEA_PAGE_SIZE = 12;
 
@@ -227,7 +228,7 @@ export const Ideas: React.FC = () => {
                           className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
                         >
                           <p className="text-sm font-medium text-gray-900 dark:text-white leading-snug mb-1">{idea.title}</p>
-                          {idea.body && <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{idea.body}</p>}
+                          {idea.body && <BodyWithLinks text={idea.body} className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 whitespace-pre-line" />}
                           {(idea.tags ?? []).length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
                               {idea.tags.map((t) => (
